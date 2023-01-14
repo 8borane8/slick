@@ -62,11 +62,11 @@ renders: {
 ```
 
 Pour utiliser cette fonction, vous devez l'encapsuler dans votre HTML.
-**Faites attention à ne mettre que son nom**
+**Faites attention à ne mettre que nom et les parenthèses**
 
 ```js
 html : <template>
-    {getTitle}
+    {getTitle()}
 </template>
 ```
 
@@ -74,7 +74,14 @@ Pour créer une nouvelle page, créez un fichier `<name>.jsx` dans le dossier `p
 
 ```js
 module.exports = {
-    renders: {},
+    renders: {
+        getTitle: async function(req, res){
+            let title = "";
+            return <template>
+                {title}
+            </template>;
+        }
+    },
 
     config: {
         path: "/",
@@ -89,11 +96,11 @@ module.exports = {
         ],
     
         html: <template>
-            <p>Index</p>
+            <p>{getTitle()}</p>
         </template>
     },
 
-    canload: function(req){ return true; }
+    canload: async function(req, res){ return true; }
 }
 ```
 

@@ -17,21 +17,24 @@ const __script__ = isDevMod ? fs.readFileSync(`${__dirname}/src/script.js`, "utf
 const pages = new Map();
 
 fs.readdirSync(`${__dirname}/../../../pages/`).filter(file => file.endsWith(".jsx")).forEach(file => {
-    const code = fs.readFileSync(`${__dirname}/../../../pages/` + file, "utf-8");
-    const module = new Module();
-    module._compile(code.replace(/<template>(.*?)<\/template>/gs, (match, group) => `\`${group}\``), 'module.js');
+    var code = fs.readFileSync(`${__dirname}/../../../pages/` + file, "utf-8");
+    var module = new Module();
+    module._compile(code.replace(/<template>(.*?)<\/template>/gs, function(match, group){
+        return `\`${group.replace(/\{(.*?[^()])\}/gs, (match, group) => "${"+group+"}")}\``;
+    }), 'module.js');
     pages.set(module.exports.config.path, module.exports);
 });
 
 async function compileHTML(page, req, res) {
     let html = page.config.html;
-    const promises = [];
-    html.replace(/\{(.*?)\}/gs, (match, ...args) => {
-        const promise = (async (match, group) => await page.renders[group](req, res))(match, ...args);
-        promises.push(promise);
+    var promises = [];
+    html.replace(/{([^()]*)\(\)}/gs, (match, group) => {
+        promises.push(page.renders[group](req, res))
     });
-    const data = await Promise.all(promises);
-    return html.replace(/\{(.*?)\}/gs, () => data.shift());
+
+    var data = await Promise.all(promises);
+    html = html.replace(/{([^()]*)\(\)}/gs, () => data.shift());
+    return html;
 }
 
 async function createDOM(page, req, res) {
@@ -42,9 +45,9 @@ async function createDOM(page, req, res) {
         `${p1}${html}${p2}`
     );
 
-    const styles = [...__app__.config.styles.map(style => `<link rel="stylesheet" href="${style}">`)
+    var styles = [...__app__.config.styles.map(style => `<link rel="stylesheet" href="${style}">`)
     , ...page.config.styles.map(style => `<link rel="stylesheet" href="${style}" notrequired>`)];
-    const scripts = [...__app__.config.scripts.map(script => `<script src="${script}?required" type="application/javascript"></script>`),
+    var scripts = [...__app__.config.scripts.map(script => `<script src="${script}?required" type="application/javascript"></script>`),
      ...page.config.scripts.map(script => `<script src="${script}" type="application/javascript" notrequired></script>`)];
 
     
