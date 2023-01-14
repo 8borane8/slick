@@ -21,7 +21,7 @@ Une fois que NodeJS est installé, il vous suffit de télécharger le repository
 
 ```
 npm install
-npm start
+slick (port)
 ```
 
 ## Documentation
