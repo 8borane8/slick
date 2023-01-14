@@ -40,6 +40,15 @@ scripts: [
 ]
 ```
 
+Dans le fichier `__app__` vous devez ajouter la variable `constants` :
+
+```js
+constantes: {
+    lang: "en",
+    encoding: "utf-8",
+}
+```
+
 Passons maintenant à la variable `html`. Pour utiliser le JSX, vous devez **impérativement englober votre code HTML** avec la balise `template`. Pour ajouter des rendus, vous pouvez définir vos fonctions dans la catégorie renders. Voici un exemple :
 
 ```js
