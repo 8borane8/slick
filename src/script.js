@@ -29,8 +29,14 @@ function updateUrl(url, force = false) {
         method: "POST",
         cache: "no-cache"
     }).then((response) => response.json()).then(function(page){
-        if(lastUrl == page.path && !force){ return; }
-        if(url.split("?")[0] == page.path){
+        if(lastUrl == page.path && !force){
+            if(url.split("#").length == 2){
+                document.getElementById(url.split("#")[1]).scrollIntoView({ behavior: "smooth" });
+                window.history.pushState({}, "", `#${url.split("#")[1]}`);
+            }
+            return;
+        }
+        if(url.split("?")[0].split("#")[0] == page.path){
             window.history.pushState({}, "", url);
             lastUrl = url;
         }else{
@@ -69,18 +75,23 @@ function updateUrl(url, force = false) {
                 if(styles.length == page.styles.length){updateHtmlContent(page, styles);}
             });
         });
-
-
     });
 }
 
 function onload() {
+    if(document.location.hash != ""){
+        document.querySelector(document.location.hash).scrollIntoView({ behavior: "smooth" });
+    }
+
     document.querySelectorAll('a').forEach((link) => {
         link.addEventListener('click', function(event){
+            let link = event.target; while(link.nodeName != "A"){ link = link.parentNode; }
+            link = new URL(link.href);
+            if(document.location.host != link.host){
+                document.location.href = link.href;
+            }
             event.preventDefault();
-            let link = event.target
-            while(link.nodeName != "A"){ link = link.parentNode; }
-            updateUrl(new URL(link.href).pathname);
+            updateUrl(link.pathname + link.hash, false);
         });
     });
 }
