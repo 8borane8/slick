@@ -1,6 +1,6 @@
 {
   "name": "@borane/slick",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Slick est un framework de développement de single page application (SPA) conçu pour être rapide, pratique et simple à utiliser.",
   "main": "index.js",
   "bin": "./index.js",
