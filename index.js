@@ -102,20 +102,22 @@ __server__.setNotFoundEndpointFunction(async function(req, res){
     let page = pages.get(req.url);
     if (!page) {
         if(req.method == "GET"){
-            return res.redirect("/");
+            return res.redirect(pages.get("__app__").constantes.default404);
         }
-        page = pages.get("/");
+        page = pages.get(pages.get("__app__").constantes.default404);
     }
 
-    if(page.canload != undefined){
+    while(page.canload != undefined){
         let canload = await page.canload(req, res);
         if(canload != true){
             if(req.method == "POST"){
-                page = pages.get(canload);
+                page = pages.get(canload.split("?")[0].split("#")[0]);
+                continue;
             }else{
                 return res.redirect(canload);
             }
         }
+        break;
     }
 
     if(req.method == "POST"){
