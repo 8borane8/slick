@@ -85,13 +85,15 @@ function onload() {
 
     document.querySelectorAll('a').forEach((link) => {
         link.addEventListener('click', function(event){
-            let link = event.target; while(link.nodeName != "A"){ link = link.parentNode; }
+            event.preventDefault();
+
+            let link = event.target;
+            while(link.nodeName != "A"){ link = link.parentNode; }
             link = new URL(link.href);
             if(document.location.host != link.host){
-                document.location.href = link.href;
+                return document.location.href = link.href;
             }
-            event.preventDefault();
-            updateUrl(link.pathname + link.hash, false);
+            updateUrl(link.pathname + link.hash + link.search, false);
         });
     });
 }
