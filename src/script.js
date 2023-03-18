@@ -1,4 +1,4 @@
-var lastUrl = document.location.pathname + document.location.search;
+let lastUrl = document.location.pathname + document.location.hash + document.location.search;
 
 function updateHtmlContent(page, styles) {
     document.title = page.title;
@@ -29,14 +29,17 @@ function updateUrl(url, force = false) {
         method: "POST",
         cache: "no-cache"
     }).then((response) => response.json()).then(function(page){
+        url = "";
+        try{ url = new URL(url); }
+        catch{ url = new URL(document.location.origin + url) }
         if(lastUrl == page.path && !force){
-            if(url.split("#").length == 2){
-                document.getElementById(url.split("#")[1]).scrollIntoView({ behavior: "smooth" });
-                window.history.pushState({}, "", `#${url.split("#")[1]}`);
+            if(url.hash == ""){
+                document.getElementById(url.hash.substring(1)).scrollIntoView({ behavior: "smooth" });
+                window.history.pushState({}, "", url.hash);
             }
             return;
         }
-        if(url.split("?")[0].split("#")[0] == page.path){
+        if(url.pathname == page.path){
             window.history.pushState({}, "", url);
             lastUrl = url;
         }else{
