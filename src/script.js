@@ -29,12 +29,11 @@ function updateUrl(url, force = false) {
         method: "POST",
         cache: "no-cache"
     }).then((response) => response.json()).then(function(page){
-        url = "";
         try{ url = new URL(url); }
         catch{ url = new URL(document.location.origin + url) }
         if(lastUrl == page.path && !force){
-            if(url.hash == ""){
-                document.getElementById(url.hash.substring(1)).scrollIntoView({ behavior: "smooth" });
+            if(url.hash != ""){
+                try{ document.getElementById(url.hash.substring(1)).scrollIntoView({ behavior: "smooth" });}catch{}
                 window.history.pushState({}, "", url.hash);
             }
             return;

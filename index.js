@@ -9,9 +9,9 @@ const uglifyjs = require("uglify-js");
 const cssminify = require("css-minify");
 const fs = require("fs");
 
-const isDevMod = true;
+const isDevMod = process.argv.includes("--dev");
 
-const __server__ = new expressapi.HttpServer(process.argv[2] == undefined ? 5000 : process.argv[2]);
+
 const __script__ = isDevMod ? fs.readFileSync(`${__dirname}/src/script.js`, "utf-8") : uglifyjs.minify(fs.readFileSync(`${__dirname}/src/script.js`, "utf-8")).code;
 
 const pages = new Map();
@@ -58,6 +58,7 @@ async function createDOM(page, req, res) {
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${page.config.title ? page.config.title : __app__.config.title}</title>
+
         ${page.config.icon ? `\n<link rel="icon shortcut" href="${page.config.icon}">` : __app__.config.icon ? `\n<link rel="icon" href="${pages.get("__app__").config.icon}">` : ""}
         ${styles.length != 0 ? "\n" + styles.join("\n") : ""}
     </head>
@@ -94,44 +95,55 @@ async function sendAsset(req, res){
     res.status(200).send(code);
 }
 
+const __server__ = new expressapi.HttpServer(process.argv[2] == undefined ? 5000 : process.argv[2]);
+
 __server__.get("/styles/:file", sendAsset);
 __server__.get("/scripts/:file", sendAsset);
 __server__.get("/assets/:file", sendAsset);
 
 __server__.setNotFoundEndpointFunction(async function(req, res){
-    let page = pages.get(req.url);
-    if (!page) {
-        if(req.method == "GET"){
-            return res.redirect(pages.get("__app__").constantes.default404);
-        }
-        page = pages.get(pages.get("__app__").constantes.default404);
-    }
+    try{
+        if(pages.get("__app__").constantes.onrequest != null && await pages.get("__app__").constantes.onrequest(req, res)){ return; }
 
-    while(page.canload != undefined){
-        let canload = await page.canload(req, res);
-        if(canload != true){
-            if(req.method == "POST"){
-                page = pages.get(canload.split("?")[0].split("#")[0]);
-                continue;
-            }else{
-                return res.redirect(canload);
+        let page = pages.get(req.url);
+        if (!page) {
+            if(req.method == "GET"){
+                return res.redirect(pages.get("__app__").constantes.default404);
             }
+            page = pages.get(pages.get("__app__").constantes.default404);
         }
-        break;
+    
+        let path = page.config.path;
+        while(page.canload != undefined){
+            let canload = await page.canload(req, res);
+            if(canload != true){
+                if(req.method == "POST"){
+                    page = pages.get(canload.split("?")[0].split("#")[0]);
+                    path = canload;
+                    continue;
+                }else{
+                    return res.redirect(canload);
+                }
+            }
+            break;
+        }
+    
+        if(req.method == "POST"){
+            return res.status(200).send(JSON.stringify({
+                path: path,
+                title: page.config.title,
+                icon: page.config.icon,
+                styles: page.config.styles,
+                scripts: page.config.scripts,
+                html: await compileHTML(page, req, res)
+            }));
+        }
+    
+        return res.status(200).send(await createDOM(page, req, res));
+    }catch(err){
+        console.log(err);
+        res.status(200).send("An error occurred.");
     }
-
-    if(req.method == "POST"){
-        return res.status(200).send(JSON.stringify({
-            path: page.config.path,
-            title: page.config.title,
-            icon: page.config.icon,
-            styles: page.config.styles,
-            scripts: page.config.scripts,
-            html: await compileHTML(page, req, res)
-        }));
-    }
-
-    return res.status(200).send(await createDOM(page, req, res));
 });
 
-__server__.listen();
+ __server__.listen();
