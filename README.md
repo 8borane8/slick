@@ -21,7 +21,7 @@ Une fois que NodeJS est installé, il vous suffit de télécharger le repository
 
 ```
 npm install
-slick (port)
+slick (port) --dev
 ```
 
 ## Documentation
@@ -46,6 +46,8 @@ Dans le fichier `__app__` vous devez ajouter la variable `constants` :
 constantes: {
     lang: "en",
     encoding: "utf-8",
+    default404: "/",
+    onrequest: null |  async function(req, res){}
 }
 ```
 
@@ -54,15 +56,16 @@ Passons maintenant à la variable `html`. Pour utiliser le JSX, vous devez **imp
 ```js
 renders: {
     getTitle: function(){
+        let title = "Titre";
         return <template>
-            <h1>Titre</h1>
+            <h1>{title}</h1>
         </template>
     }
 }
 ```
 
 Pour utiliser cette fonction, vous devez l'encapsuler dans votre HTML.
-**Faites attention à ne mettre que nom et les parenthèses**
+**Faites attention à ne mettre que son nom**
 
 ```js
 html : <template>
@@ -74,14 +77,7 @@ Pour créer une nouvelle page, créez un fichier `<name>.jsx` dans le dossier `p
 
 ```js
 module.exports = {
-    renders: {
-        getTitle: async function(req, res){
-            let title = "";
-            return <template>
-                {title}
-            </template>;
-        }
-    },
+    renders: {},
 
     config: {
         path: "/",
@@ -96,11 +92,11 @@ module.exports = {
         ],
     
         html: <template>
-            <p>{getTitle()}</p>
+            <p>Index</p>
         </template>
     },
 
-    canload: async function(req, res){ return true; }
+    canload: function(req){ return true; }
 }
 ```
 
