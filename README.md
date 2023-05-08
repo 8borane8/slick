@@ -1,106 +1,140 @@
 # Slick
 
-Slick est un framework de développement de single page application (SPA) conçu pour être rapide, pratique et simple à utiliser.
+Slick est un framework permettant la création de Single Page Application en utilisant du Server Side Rendering.
 
 ## Technologies
 
 - Language : NodeJS
-- Librairies : @borane/expressapi, uglify-js, css-minify
+- Librairies : @borane/expressapi, clean-css, mime, uglify-js
 
 ## Avantages
 
 - Rapide / Léger
 - Supporte la syntaxe JSX
-- Facile à utiliser
+- Simple d'utilisation
 
 ## Installation
 
-Pour utiliser Slick, vous devez d'abord installer NodeJS sur votre ordinateur. Vous pouvez télécharger la dernière version de NodeJS [ici](https://nodejs.org/).
-
-Une fois que NodeJS est installé, il vous suffit de télécharger le repository slick dans sa dernière version. Executer les lignes de commandes suivantes:
-
+Afin de démarrer un projet avec Slick, vous devez installer [NodeJS](https://nodejs.org/).
+Exécuter ensuite les commandes ci-dessous:
 ```
-npm install
-slick (port) --dev
+mkdir Nouveau_Projet && cd Nouveau_Projet
+mkdir pages styles scripts assets
+npm init -y
+npm i @borane/slick
+npm i nodemon --save-dev
+npm set-script dev nodemon --ext * --exec slick --port=5000 --dev
+npm set-script build slick --port=5000
+```
+
+Créez les fichiers `/pages/__app__.jsx` et `/pages/index.jsx`.
+Vous pouvez vous aider des exemples présent [ici](exemples/)
+
+Pour lancer le projet executez l'une des commandes suivantes:
+```
+npm run dev
+npm run build
+```
+
+Par la suite nous vous conseillons de modifier les champs ci-dessous présents dans le fichier `package.json`:
+```
+version
+description
+author
 ```
 
 ## Documentation
 
-Pour commencer à coder, vous devrez éditer le fichier `/pages/__app__.jsx`. Vous pouvez y éditer les constantes qui seront uniques pour tout le site.
+Slick requiert un fichier de configuration, il est généralement nommé `/pages/__app__.jsx`.
+Voici toutes les propriétés et leurs valeures possibles:
 
-Une fois que vous avez fait cela, vous pouvez éditer la configuration. Assurez-vous de ne pas modifier la variable `path` et de la définir sur `__app__`. Si vous ne souhaitez pas d'icône, définissez sa valeur sur null.
+```jsx
+const title = "Header";
 
-Pour inclure des styles ou des scripts, voici la syntaxe de chemin vers le fichier :
-```js
-styles: [
-    "/styles/<name>.css"
-],
-scripts: [
-    "/scripts/<name>.js"
-]
-```
+module.exports = {
+    path: "__app__", // Ce paramètre ne peut être modifié
 
-Dans le fichier `__app__` vous devez ajouter la variable `constants` :
+    configuration: {
+        lang: "fr", // <html lang="">
+        default404: "/", // Url de la page 404
+        onrequest: null || async function(req, res){
+            if(...){
+                res.status(200).send("Erreur");
+                return false; // Empeche le chargement de la page
+            }
+            
+            return true; // Autorise le chargement de la page
+        }
+    },
 
-```js
-constantes: {
-    lang: "en",
-    encoding: "utf-8",
-    default404: "/",
-    onrequest: null |  async function(req, res){}
+    renders: {
+        getMessage: async function(req){ // Exemple de fonction retournant le contenu de la variable titre dans un h1
+            return <template>
+                <h1>{title}</h1>
+            </template>;
+        }
+    },
+
+    styles: [
+        "/styles/index.css" // Url des styles
+    ],
+    scripts: [
+        "/scripts/index.js" // Url des scripts
+    ],
+
+    head: null || <template></template>,
+
+    // #root est requis
+    body: <template>
+        <header>{getTitle()}</header>
+        <div id="root"></div>
+    </template>,
 }
 ```
 
-Passons maintenant à la variable `html`. Pour utiliser le JSX, vous devez **impérativement englober votre code HTML** avec la balise `template`. Pour ajouter des rendus, vous pouvez définir vos fonctions dans la catégorie renders. Voici un exemple :
+Pour créer une nouvelle page, créez un fichier `/pages/<name>.jsx` et ajoutez y cet exemple:
 
 ```js
-renders: {
-    getTitle: function(){
-        let title = "Titre";
-        return <template>
-            <h1>{title}</h1>
-        </template>
+const message = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum beatae sed facilis excepturi soluta eligendi deleniti, et tempore autem voluptatum voluptate quos iusto ipsam fugiat repellat eveniet culpa provident laborum!";
+
+module.exports = {
+    path: "/",
+
+    renders: {
+        getMessage: async function(req){
+            return <template>
+                <p>{message}</p>
+            </template>;
+        }
+    },
+
+    title: "Test",
+    icon: null || "/assets/favicon.ico",
+
+    styles: [
+        "/styles/index.css"
+    ],
+    scripts: [
+        "/scripts/index.js"
+    ],
+
+    head: <template>
+        
+    </template>,
+
+    body: <template>
+        {getMessage()}
+    </template>,
+
+    canload: null || async function(req, res){
+        if(...){
+            return "/login"; // Redirige vers l'url indiqué
+        }
+        
+        return true; // Autorise le chargement de la page
     }
 }
 ```
-
-Pour utiliser cette fonction, vous devez l'encapsuler dans votre HTML.
-**Faites attention à ne mettre que son nom**
-
-```js
-html : <template>
-    {getTitle()}
-</template>
-```
-
-Pour créer une nouvelle page, créez un fichier `<name>.jsx` dans le dossier `pages`. Copiez-y cet exemple :
-
-```js
-module.exports = {
-    renders: {},
-
-    config: {
-        path: "/",
-    
-        title: "Index",
-        icon: null,
-        styles: [
-            "/styles/index.css"
-        ],
-        scripts: [
-            "/scripts/index.js"
-        ],
-    
-        html: <template>
-            <p>Index</p>
-        </template>
-    },
-
-    canload: function(req){ return true; }
-}
-```
-
-Vous y retrouverez les mêmes paramètres que dans le fichier `__app__`. La fonction `canload` n'est pas requise, mais elle permet de rediriger vers une autre page en utilisant le code `return "/path"`.
 
 ## Disclamer
 
