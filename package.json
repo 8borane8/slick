@@ -1,23 +1,29 @@
 {
 	"name": "@borane/slick",
-	"version": "2.0.8",
-	"description": "Slick est un framework de développement de single page application (SPA) conçu pour être rapide, pratique et simple à utiliser.",
-	"main": "index.js",
-	"bin": "./index.js",
-	"keywords": [
-		"Single Page",
-		"SPA",
-		"Routage",
-		"Render Side Server",
-		"Slick"
-	],
+	"version": "2.1.0",
+	"description": "Slick est un framework permettant la création de Single Page Application en utilisant du Server Side Rendering.",
 	"author": "Borane#9999",
 	"license": "ISC",
+	"homepage": "https://github.com/8borane8/slick",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/8borane8/slick.git"
+	},
+	"keywords": [
+		"web",
+		"routage",
+		"minify",
+		"Single Page Application",
+		"SPA",
+		"Server Side Rendering",
+		"SSR"
+	],
+	"bugs": "https://github.com/8borane8/slick/issues",
+	"bin": "index.js",
 	"dependencies": {
 		"@borane/expressapi": "^1.2.0",
-		"css-minify": "^2.0.0",
-		"nodemon": "^2.0.20",
+		"clean-css": "^5.3.2",
+		"mime": "^3.0.0",
 		"uglify-js": "^3.17.4"
-	},
-	"homepage": "https://github.com/8borane8/slick"
+	}
 }

@@ -1,149 +1,210 @@
 #!/usr/bin/env node
-//-*- js -*-
-
 "use strict";
 
 const expressapi = require("@borane/expressapi");
-const { Module } = require('module');
+const cleancss = require("clean-css");
 const uglifyjs = require("uglify-js");
-const cssminify = require("css-minify");
+const mime = require('mime');
 const fs = require("fs");
 
-const isDevMod = process.argv.includes("--dev");
+// Récupération du port
+let port = 5000;
+for (let arg of process.argv) {
+    if (!arg.startsWith("--port=")) { continue; }
 
-
-const __script__ = isDevMod ? fs.readFileSync(`${__dirname}/src/script.js`, "utf-8") : uglifyjs.minify(fs.readFileSync(`${__dirname}/src/script.js`, "utf-8")).code;
-
-const pages = new Map();
-
-fs.readdirSync(`${__dirname}/../../../pages/`).filter(file => file.endsWith(".jsx")).forEach(file => {
-    var code = fs.readFileSync(`${__dirname}/../../../pages/` + file, "utf-8");
-    var module = new Module();
-    module._compile(code.replace(/<template>(.*?)<\/template>/gs, function(match, group){
-        return `\`${group.replace(/\{(.*?[^()])\}/gs, (match, group) => "${"+group+"}")}\``;
-    }), 'module.js');
-    pages.set(module.exports.config.path, module.exports);
-});
-
-async function compileHTML(page, req, res) {
-    let html = page.config.html;
-    var promises = [];
-    html.replace(/{([^()]*)\(\)}/gs, (match, group) => {
-        promises.push(page.renders[group](req, res))
-    });
-
-    var data = await Promise.all(promises);
-    html = html.replace(/{([^()]*)\(\)}/gs, () => data.shift());
-    return html;
+    port = parseInt(arg.split("=")[1]);
+    break;
 }
 
+// Initialisation des constantes
+const __script__ = process.argv.includes("--dev") ?
+    fs.readFileSync(`${__dirname}/src/script.js`, { encoding: "utf-8"}) :
+    uglifyjs.minify(fs.readFileSync(`${__dirname}/src/script.js`, { encoding: "utf-8"})).code;
+
+const __server__ = new expressapi.HttpServer(port);
+const __cachedStaticFiles__ = new Map();
+const __cssMinifier__ = new cleancss();
+const __pages__ = new Map();
+const assetsRedirect = [
+    "/favicon.ico",
+    "/robots.txt"
+];
+
+// Déclaration de la méthode permettant de charger un module à partir de son contenu en mémoire
+function requireFromString(src) {
+    const m = new module.constructor();
+    m._compile(src, "");
+    return m.exports;
+}
+
+// Chargement des pages
+fs.readdirSync(`./pages/`).forEach(function(pageFile){
+    const compiledCode = fs.readFileSync(`./pages/${pageFile}`, { encoding: "utf-8"}).replace(/<template>(.*?)<\/template>/gs, function(_match, group){
+        const compiledFunction = group.replace(/\{(.*?[^()])\}/gs, (_match, group) => `\${${group}}`)
+        return `\`${compiledFunction}\``;
+    });
+
+    const m = requireFromString(compiledCode);
+    __pages__.set(m.path, m);
+});
+
+// Déclaration de la fonction permettant de servir les fichiers statiques
+async function sendStaticFile(req, res){
+    req.url = `.${req.url}`;
+    if(__cachedStaticFiles__.has(req.url)){
+        const cachedStaticFile = __cachedStaticFiles__.get(req.url);
+
+        res.setHeader("Cache-Control", "max-age=31536000, must-revalidate");
+        res.setHeader("Last-Modified", cachedStaticFile.get("lastModified"));
+        res.setHeader("Content-Type", cachedStaticFile.get("type"));
+
+        if(!cachedStaticFile.has("content")){
+            res.sendFile(req.url);
+            return;
+        }
+
+        res.status(200).send(cachedStaticFile.get("content"));
+        return;
+    }
+
+    if(!fs.existsSync(req.url)){ return res.status(404).send("404 Not found."); }
+    const cachedStaticFile = new Map();
+    cachedStaticFile.set("content", fs.readFileSync(req.url, { encoding: "utf-8"}));
+    cachedStaticFile.set("lastModified", fs.statSync(req.url).mtime);
+    cachedStaticFile.set("ETag", expressapi.sha512(cachedStaticFile.get("content")));
+    cachedStaticFile.set("type", mime.getType(req.url));
+
+    res.setHeader("Cache-Control", "max-age=31536000, must-revalidate");
+    res.setHeader("Last-Modified", cachedStaticFile.get("lastModified"));
+    res.setHeader("Content-Type", cachedStaticFile.get("type"));
+
+    switch(req.url.substring(1).match(/\.([^.?]+).*$/)[1]){
+        case "js":
+            if(!process.argv.includes("--dev")){
+                cachedStaticFile.set("content",
+                    uglifyjs.minify(cachedStaticFile.get("content"), {
+                        mangle: { keep_fnames: true }
+                    }).code
+                );
+            }
+            
+            if(Object.keys(req.query).includes("slick-notrequired")){
+                cachedStaticFile.set("content", `(async function(){${cachedStaticFile.get("content")}})()`);
+            }
+            break;
+
+        case "css":
+            if(process.argv.includes("--dev")){ break; }
+            cachedStaticFile.set("content", __cssMinifier__.minify(cachedStaticFile.get("content")).styles);
+            break;
+
+        default:
+            __cachedStaticFiles__.set(req.url, cachedStaticFile);
+            res.sendFile(req.url);
+            return;
+    }
+    
+
+    __cachedStaticFiles__.set(req.url, cachedStaticFile);
+    res.status(200).send(cachedStaticFile.get("content"));
+}
+
+// Définition des routes permettant de servir les fichiers statiques
+__server__.get("/styles/:file", sendStaticFile);
+__server__.get("/scripts/:file", sendStaticFile);
+__server__.get("/assets/:file", sendStaticFile);
+
+// Déclaration de la fonction compilant les fonctions async se trouvant dans le body
+async function compileBody(page, req) {
+    const promises = [];
+    page.body.replace(/{([^()]*)\(\)}/gs, function(_match, group){
+        promises.push(page.renders[group](req))
+    });
+
+    const data = await Promise.all(promises);
+    return page.body.replace(/{([^()]*)\(\)}/gs, () => data.shift());
+}
+
+// Déclaration de la fonction compilant les fonctions async se trouvant dans le body
 async function createDOM(page, req, res) {
-    let html = await compileHTML(page, req, res);
-    let __app__ = pages.get("__app__");
+    // Compilation de la page
+    const pageBody = await compileBody(page, req);
+    const body = (await compileBody(__pages__.get("__app__"), req)).replace(/(<[^>]*\bid\s*=\s*['"]\s*root\s*['"][^>]*>)(?:.*?)(<\/[^>]*>)/gs, function(_match, p1, p2){
+        return `${p1}${pageBody}${p2}`;
+    });
 
-    html = (await compileHTML(__app__, req, res)).replace(/(<[^>]*\bid\s*=\s*['"]\s*root\s*['"][^>]*>)(?:.*?)(<\/[^>]*>)/gs, (match, p1, p2) =>
-        `${p1}${html}${p2}`
-    );
-
-    var styles = [...__app__.config.styles.map(style => `<link rel="stylesheet" href="${style}">`)
-    , ...page.config.styles.map(style => `<link rel="stylesheet" href="${style}" notrequired>`)];
-    var scripts = [...__app__.config.scripts.map(script => `<script src="${script}?required" type="application/javascript"></script>`),
-     ...page.config.scripts.map(script => `<script src="${script}" type="application/javascript" notrequired></script>`)];
+    // Génération des styles et des scripts
+    const styles = [...__pages__.get("__app__").styles.map(style => `<link rel="stylesheet" href="${style}">`),
+        ...page.styles.map(style => `<link rel="stylesheet" href="${style}?slick-notrequired">`)];
+    const scripts = [...__pages__.get("__app__").scripts.map(script => `<script src="${script}" type="application/javascript"></script>`),
+        ...page.scripts.map(script => `<script src="${script}?slick-notrequired" type="application/javascript"></script>`)];
 
     
     return `<!DOCTYPE html>
-<html lang="${__app__.constantes.lang}">
-    <head>
-        <meta charset="${__app__.constantes.encoding}">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${page.config.title ? page.config.title : __app__.config.title}</title>
+<html lang="${__pages__.get("__app__").configuration.lang}">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${page.title}</title>
 
-        ${page.config.icon ? `\n<link rel="icon shortcut" href="${page.config.icon}">` : __app__.config.icon ? `\n<link rel="icon" href="${pages.get("__app__").config.icon}">` : ""}
-        ${styles.length != 0 ? "\n" + styles.join("\n") : ""}
-    </head>
-    <body>
-        ${html}
-        <script>${__script__}</script>${scripts.length != 0 ? "\n" + scripts.join("\n") : ""}
-    </body>
+            ${styles.join("\n")}
+            ${__pages__.get("__app__").head == null ? "" : __pages__.get("__app__").head}
+            <link rel="icon shortcut" href="${page.icon == null ? '' : page.icon}">
+            ${page.head == null ? "" : page.head}
+        </head>
+        <body>
+            ${body}
+            <script>${__script__}</script>
+            ${scripts.join("\n")}
+        </body>
 </html>`;
 }
 
-const loadedMinify = new Map();
-async function sendAsset(req, res){
-    if(!fs.existsSync(`${__dirname}/../../../${req.url}`)){ return res.status(404).send(""); }
-    let code = fs.readFileSync(`${__dirname}/../../../${req.url}`, "utf-8");
-
-    if(loadedMinify.has(req.url)){ code = loadedMinify.get(req.url); }
-    else{
-        if(req.url.endsWith(".js")){
-            code = isDevMod ? code : uglifyjs.minify(code, {
-                mangle: { keep_fnames: true }
-            }).code;
-
-            if(!Object.keys(req.query).includes("required")){
-                code = `(async function(){${code}})()`;
-            }
-        }
-        else if(req.url.endsWith(".css")){ code = isDevMod ? code : await cssminify(code); }
-        else{
-            return res.status(200).sendFile(`${__dirname}/../../../${req.url}`);
-        }
-        loadedMinify.set(req.url, code);
-    }
-    
-    res.status(200).send(code);
-}
-
-const __server__ = new expressapi.HttpServer(process.argv[2] == undefined ? 5000 : process.argv[2]);
-
-__server__.get("/styles/:file", sendAsset);
-__server__.get("/scripts/:file", sendAsset);
-__server__.get("/assets/:file", sendAsset);
-
 __server__.setNotFoundEndpointFunction(async function(req, res){
-    try{
-        if(pages.get("__app__").constantes.onrequest != null && await pages.get("__app__").constantes.onrequest(req, res)){ return; }
-
-        let page = pages.get(req.url);
-        if (!page) {
-            if(req.method == "GET"){
-                return res.redirect(pages.get("__app__").constantes.default404);
-            }
-            page = pages.get(pages.get("__app__").constantes.default404);
-        }
-    
-        let path = page.config.path;
-        while(page.canload != undefined){
-            let canload = await page.canload(req, res);
-            if(canload != true){
-                if(req.method == "POST"){
-                    page = pages.get(canload.split("?")[0].split("#")[0]);
-                    path = canload;
-                    continue;
-                }else{
-                    return res.redirect(canload);
-                }
-            }
-            break;
-        }
-    
-        if(req.method == "POST"){
-            return res.status(200).send(JSON.stringify({
-                path: path,
-                title: page.config.title,
-                icon: page.config.icon,
-                styles: page.config.styles,
-                scripts: page.config.scripts,
-                html: await compileHTML(page, req, res)
-            }));
-        }
-    
-        return res.status(200).send(await createDOM(page, req, res));
-    }catch(err){
-        console.log(err);
-        res.status(200).send("An error occurred.");
+    if(assetsRedirect.includes(req.url)){
+        res.redirect(`/assets${req.url}`);
+        return;
     }
+
+    // Execution de la fonction onrequest
+    if(__pages__.get("__app__").configuration.onrequest != null && await __pages__.get("__app__").configuration.onrequest(req, res) == false){ return; }
+
+    // Vérification de la page et redirection vers la page 404 si elle n'existe pas
+    let page = __pages__.get(req.url);
+    if(page == undefined){
+        if(req.method == "GET"){
+            res.redirect(__pages__.get("__app__").configuration.default404);
+            return;
+        }
+        page = pages.get(__pages__.get("__app__").configuration.default404);
+    }
+
+    // Execution de la fonction canload
+    let path = req.url;
+    while(page.canload != null){
+        const canload = await page.canload(req, res);
+        if(canload == true){ break; }
+
+        page = __pages__.get(canload.split("#")[0]);
+        path = canload;
+    }
+
+    if(req.method == "POST"){
+        res.status(200).send({
+            path: path,
+            title: page.title,
+            icon: page.icon,
+            styles: page.styles.map(style => `${style}?slick-notrequired`),
+            scripts: page.scripts.map(script => `${script}?slick-notrequired`),
+            head: page.head,
+            body: await compileBody(page, req)
+        });
+        return;
+    }
+
+    return res.status(200).send(await createDOM(page, req, res));
 });
 
- __server__.listen();
+// Lancement du serveur
+__server__.listen();
