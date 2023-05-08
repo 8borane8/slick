@@ -5,14 +5,7 @@ class Slick{
         this.favicon = document.querySelector("link[rel='icon shortcut']");
 
         // Ajout des events
-        window.addEventListener("popstate", function(event){
-            event.preventDefault();
-            SLICK.updateUrl(Slick.getPathFromLocation(event.target.location));
-        });
-        
-        document.addEventListener("DOMContentLoaded", function(){
-            SLICK.onload();
-        });
+        this.addEventsListener();
     }
 
     // Déclaration de la fonction statique permettant de récupérer le chemin à partir de l'objet Location
@@ -20,7 +13,14 @@ class Slick{
         return location.pathname + location.hash + location.search;
     }
 
-    static updateHtmlContent(page, styles) {
+    addEventsListener(){
+        document.addEventListener("DOMContentLoaded", this.onload.bind(this));
+        window.addEventListener("popstate", function(event){
+            this.updateUrl(Slick.getPathFromLocation(event.target.location));
+        }.bind(this));
+    }
+
+    updateHtmlContent(page, styles) {
         document.getElementById("root").innerHTML = page.body;
     
         // Suppression des anciens styles et scripts
@@ -36,7 +36,7 @@ class Slick{
             document.body.appendChild(script);
         });
     
-        SLICK.onload();
+        this.onload();
     }
     
     updateUrl(url) {
@@ -50,20 +50,22 @@ class Slick{
             if(url.pathname == page.path){ window.history.pushState({}, "", url); }
             else{ window.history.pushState({}, "", page.path); }
     
-            SLICK.lastUrl = Slick.getPathFromLocation(window.location)
+            this.lastUrl = Slick.getPathFromLocation(window.location)
     
             // Mise à jour du titre et de l'icon
             document.title = page.title;
-            SLICK.favicon.href = page.icon == null ? "" : page.icon;
+            this.favicon.href = page.icon == null ? "" : page.icon;
     
             // Mise à jour du head
-            Array.from(document.head.children).slice(Array.from(document.head.children).indexOf(SLICK.favicon) + 1).forEach(e => e.remove());
-            SLICK.favicon.insertAdjacentHTML("afterend", page.head);
+            Array.from(document.head.children).slice(Array.from(document.head.children).indexOf(this.favicon) + 1).forEach(e => e.remove());
+            this.favicon.insertAdjacentHTML("afterend", page.head);
     
             // Récupération des anciens styles
-            const styles = Array.from(document.querySelectorAll("link[rel='stylesheet']")).filter(s => s.href.endsWith("?slick-notrequired"));
+            const styles = Array.from(document.querySelectorAll("link[rel='stylesheet']"))
+                .filter(s => s.href.endsWith("?slick-notrequired"));
+
             if(page.styles.length == 0){
-                Slick.updateHtmlContent(page, styles);
+                this.updateHtmlContent(page, styles);
                 return;
             }
     
@@ -76,34 +78,41 @@ class Slick{
     
                 style.addEventListener("load", function(){
                     stylesLoadedCount++;
-                    if (stylesLoadedCount === page.styles.length) { Slick.updateHtmlContent(page, styles); }
-                });
+                    if (stylesLoadedCount === page.styles.length) {
+                        this.updateHtmlContent(page, styles);
+                    }
+                }.bind(this));
     
                 document.querySelector("title").insertAdjacentElement("afterend", style);
-            });
-        });
+            }.bind(this));
+        }.bind(this));
     }
 
     // Fonction executée au chargement de la page
     onload() {
-        if(window.location.hash != ""){ try{ document.getElementById(window.location.hash.substring(1)).scrollIntoView({ behavior: "smooth" }); }catch{} }
+        if(window.location.hash != ""){
+            try{
+                document.getElementById(window.location.hash.substring(1))
+                    .scrollIntoView({ behavior: "smooth" });
+            }catch{}
+        }
     
         document.querySelectorAll("a").forEach(function(link){
             link.addEventListener("click", function(event){
                 event.preventDefault();
     
-                let link = event.target;
-                while(link.nodeName != "A"){ link = link.parentNode; }
+                let element = event.target;
+                while(element.nodeName != "A"){ element = element.parentNode; }
     
-                const url = new URL(link.href);
+                const url = new URL(element.href);
                 if(window.location.host != url.host){
                     window.location.href = url.href;
                     return;
                 }
     
-                SLICK.updateUrl(Slick.getPathFromLocation(url));
-            });
-        });
+                this.updateUrl(Slick.getPathFromLocation(url));
+            }.bind(this));
+        }.bind(this));
     }
 }
 
