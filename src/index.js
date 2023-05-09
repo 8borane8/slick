@@ -18,8 +18,8 @@ for (let arg of process.argv) {
 
 // Initialisation des constantes
 const __script__ = process.argv.includes("--dev") ?
-    fs.readFileSync(`${__dirname}/src/script.js`, { encoding: "utf-8"}) :
-    uglifyjs.minify(fs.readFileSync(`${__dirname}/src/script.js`, { encoding: "utf-8"})).code;
+    fs.readFileSync(`${__dirname}/script.js`, { encoding: "utf-8"}) :
+    uglifyjs.minify(fs.readFileSync(`${__dirname}/script.js`, { encoding: "utf-8"})).code;
 
 const __server__ = new expressapi.HttpServer(port);
 const __cachedStaticFiles__ = new Map();
