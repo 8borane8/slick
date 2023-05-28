@@ -94,7 +94,11 @@ class Slick{
             try{
                 document.getElementById(window.location.hash.substring(1))
                     .scrollIntoView({ behavior: "smooth" });
-            }catch{}
+            }catch{
+                window.scrollTo(0, 0);
+            }
+        }else{
+            window.scrollTo(0, 0);
         }
     
         document.querySelectorAll("a").forEach(function(link){
