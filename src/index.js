@@ -57,6 +57,7 @@ async function sendStaticFile(req, res){
         res.setHeader("Cache-Control", "max-age=31536000");
         res.setHeader("Last-Modified", cachedStaticFile.get("lastModified"));
         res.setHeader("Content-Type", cachedStaticFile.get("type"));
+        res.setHeader("eTag", cachedStaticFile.get("eTag"));
 
         if(!cachedStaticFile.has("content")){
             res.sendFile(req.url);
@@ -99,11 +100,16 @@ async function sendStaticFile(req, res){
             break;
 
         default:
+            cachedStaticFile.set("eTag", expressapi.sha256(fs.readFileSync(req.url)));
+            res.setHeader("eTag", cachedStaticFile.get("eTag"));
+
             __cachedStaticFiles__.set(req.url, cachedStaticFile);
             res.sendFile(req.url);
             return;
     }
     
+    cachedStaticFile.set("eTag", expressapi.sha256(cachedStaticFile.get("content")));
+    res.setHeader("eTag", cachedStaticFile.get("eTag"));
 
     __cachedStaticFiles__.set(req.url, cachedStaticFile);
     res.status(200).send(cachedStaticFile.get("content"));
@@ -142,22 +148,22 @@ async function createDOM(page, req, res) {
     
     return `<!DOCTYPE html>
 <html lang="${__pages__.get("__app__").configuration.lang}">
-        <head>
-            <meta charset="UTF-8">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${page.title}</title>
+    <head>
+       <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${page.title}</title>
 
-            ${styles.join("\n")}
-            ${__pages__.get("__app__").head == null ? "" : __pages__.get("__app__").head}
-            <link rel="icon shortcut" href="${page.icon == null ? '' : page.icon}">
-            ${page.head == null ? "" : page.head}
-        </head>
-        <body>
-            ${body}
-            <script>${__script__}</script>
-            ${scripts.join("\n")}
-        </body>
+        ${styles.join("\n")}
+        ${__pages__.get("__app__").head == null ? "" : __pages__.get("__app__").head}
+        <link rel="icon shortcut" href="${page.icon == null ? '' : page.icon}">
+        ${page.head == null ? "" : page.head}
+    </head>
+    <body>
+        ${body}
+        <script>${__script__}</script>
+        ${scripts.join("\n")}
+    </body>
 </html>`;
 }
 
