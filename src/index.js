@@ -183,7 +183,7 @@ __server__.setNotFoundEndpointFunction(async function(req, res){
             res.redirect(__pages__.get("__app__").configuration.default404);
             return;
         }
-        page = pages.get(__pages__.get("__app__").configuration.default404);
+        page = __pages__.get(__pages__.get("__app__").configuration.default404);
     }
 
     // Execution de la fonction canload
