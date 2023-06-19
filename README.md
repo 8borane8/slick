@@ -23,8 +23,8 @@ mkdir pages styles scripts assets
 npm init -y
 npm i @borane/slick
 npm i nodemon --save-dev
-npm set-script dev nodemon --ext * --exec slick --port=5000 --dev
-npm set-script build slick --port=5000
+npm pkg delete scripts.test main keywords license
+npm pkg set scripts.dev="nodemon --ext * --exec slick --port=5000 --dev" scripts.build="slick --port=5000"
 ```
 
 Créez les fichiers `/pages/__app__.jsx` et `/pages/index.jsx`.
@@ -38,6 +38,7 @@ npm run build
 
 Par la suite nous vous conseillons de modifier les champs ci-dessous présents dans le fichier `package.json`:
 ```
+name
 version
 description
 author
