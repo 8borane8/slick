@@ -209,6 +209,7 @@ __server__.setNotFoundEndpointFunction(async function(req, res){
         return;
     }
 
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
     return res.status(200).send(await createDOM(page, req, res));
 });
 
