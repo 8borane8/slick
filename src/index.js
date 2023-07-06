@@ -187,13 +187,26 @@ __server__.setNotFoundEndpointFunction(async function(req, res){
     }
 
     // Execution de la fonction canload
-    let path = req.url;
-    while(page.canload != null){
-        const canload = await page.canload(req, res);
-        if(canload == true){ break; }
+    if (req.method === "GET") {
+        const canload = page.canload == null ? true : await page.canload(req, res);
+      
+        if (canload == true) {
+            res.setHeader("Content-Type", "text/html; charset=utf-8");
+            res.status(200).send(await createDOM(page, req, res));
+            return;
+        }
 
-        page = __pages__.get(canload.split("#")[0]);
-        path = canload;
+        res.redirect(canload);
+        return;
+    }
+
+    let path = req.url;
+    if(page.canload != null){
+        const canload = await page.canload(req, res);
+        if(canload != true){
+            page = __pages__.get(canload.split("#")[0]);
+            path = canload;
+        }
     }
 
     if(req.method == "POST"){
@@ -208,9 +221,6 @@ __server__.setNotFoundEndpointFunction(async function(req, res){
         });
         return;
     }
-
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    return res.status(200).send(await createDOM(page, req, res));
 });
 
 // Lancement du serveur
