@@ -18,6 +18,23 @@ class Slick{
         window.addEventListener("popstate", function(event){
             this.updateUrl(Slick.getPathFromLocation(event.target.location));
         }.bind(this));
+
+        document.querySelectorAll("a:not(:root #root a)").forEach(function(link){
+            link.addEventListener("click", function(event){
+                event.preventDefault();
+    
+                let element = event.target;
+                while(element.nodeName != "A"){ element = element.parentNode; }
+    
+                const url = new URL(element.href);
+                if(window.location.host != url.host){
+                    window.location.href = url.href;
+                    return;
+                }
+    
+                this.updateUrl(Slick.getPathFromLocation(url));
+            }.bind(this));
+        }.bind(this));
     }
 
     updateHtmlContent(page, styles) {
@@ -101,7 +118,7 @@ class Slick{
             window.scrollTo(0, 0);
         }
     
-        document.querySelectorAll("a").forEach(function(link){
+        document.querySelectorAll("#root a").forEach(function(link){
             link.addEventListener("click", function(event){
                 event.preventDefault();
     
