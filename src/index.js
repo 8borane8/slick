@@ -206,7 +206,7 @@ __server__.setNotFoundEndpointFunction(async function(req, res){
     if(page.canload != null){
         const canload = await page.canload(req, res);
         if(canload != true){
-            page = __pages__.get(canload.split("#")[0]);
+            page = __pages__.get(canload.split("#")[0].split("?")[0]);
             path = canload;
         }
     }

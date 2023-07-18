@@ -1,6 +1,6 @@
 {
 	"name": "@borane/slick",
-	"version": "2.1.8",
+	"version": "2.1.9",
 	"description": "Slick est un framework permettant la création de Single Page Application en utilisant du Server Side Rendering.",
 	"author": "Borane#9999",
 	"license": "ISC",
