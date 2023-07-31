@@ -1,6 +1,7 @@
 class Slick{
     constructor(){
         // Initialisation des variables
+        this.onloadListeners = []
         this.lastUrl = Slick.getPathFromLocation(window.location) ;
         this.favicon = document.querySelector("link[rel='icon shortcut']");
 
@@ -13,28 +14,31 @@ class Slick{
         return location.pathname + location.hash + location.search;
     }
 
+    static linkClickEvent(event){
+        if(!["", "_self"].includes(link.target)){ return; }
+        event.preventDefault();
+
+        let element = event.target;
+        while(element.nodeName != "A"){ element = element.parentNode; }
+
+        const url = new URL(element.href);
+        if(window.location.host != url.host){
+            window.location.href = url.href;
+            return;
+        }
+
+        this.updateUrl(Slick.getPathFromLocation(url));
+    }
+
     addEventsListener(){
         document.addEventListener("DOMContentLoaded", this.onload.bind(this));
-        window.addEventListener("popstate", function(event){
+        window.addEventListener("popstate", (event) => {
             this.updateUrl(Slick.getPathFromLocation(event.target.location));
-        }.bind(this));
+        });
 
-        document.querySelectorAll("a:not(:root #root a)").forEach(function(link){
-            link.addEventListener("click", function(event){
-                event.preventDefault();
-    
-                let element = event.target;
-                while(element.nodeName != "A"){ element = element.parentNode; }
-    
-                const url = new URL(element.href);
-                if(window.location.host != url.host){
-                    window.location.href = url.href;
-                    return;
-                }
-    
-                this.updateUrl(Slick.getPathFromLocation(url));
-            }.bind(this));
-        }.bind(this));
+        document.querySelectorAll("a:not(:root #root a)").forEach((link) => {
+            link.addEventListener("click", this.linkClickEvent.bind(this))
+        });
     }
 
     updateHtmlContent(page, styles) {
@@ -45,7 +49,7 @@ class Slick{
         Array.from(document.querySelectorAll("script[type='application/javascript']")).filter(s => s.src.endsWith("?slick-notrequired")).forEach(s => s.remove());
     
         // Ajout des nouveaux scripts
-        page.scripts.forEach(function(src) {
+        page.scripts.forEach((src) => {
             const script = document.createElement("script");
             script.setAttribute("type", "application/javascript");
             script.setAttribute("src", src);
@@ -60,7 +64,7 @@ class Slick{
         fetch(url, {
             method: "POST",
             cache: "no-cache"
-        }).then(response => response.json()).then(function(page){
+        }).then(response => response.json()).then((page) => {
             url = new URL(url, window.location.href);
     
             // Mise à jour de l'url
@@ -88,38 +92,39 @@ class Slick{
     
             // Ajout des nouvaux styles
             let stylesLoadedCount = 0;
-            page.styles.forEach(function(href) {
+            page.styles.forEach((href) => {
                 const style = document.createElement("link");
                 style.setAttribute("rel", "stylesheet");
                 style.setAttribute("href", href);
     
-                style.addEventListener("load", function(){
+                style.addEventListener("load", () => {
                     stylesLoadedCount++;
                     if (stylesLoadedCount === page.styles.length) {
                         this.updateHtmlContent(page, styles);
                     }
-                }.bind(this));
+                });
     
                 document.querySelector("title").insertAdjacentElement("afterend", style);
-            }.bind(this));
-        }.bind(this));
+            });
+        });
     }
 
     // Fonction executée au chargement de la page
     onload() {
         if(window.location.hash != ""){
-            try{
-                document.getElementById(window.location.hash.substring(1))
-                    .scrollIntoView({ behavior: "smooth" });
-            }catch{
+            const element = document.getElementById(window.location.hash.substring(1));
+            if(element != null){
+                element.scrollIntoView({ behavior: "smooth" });
+            }else{
                 window.scrollTo(0, 0);
             }
         }else{
             window.scrollTo(0, 0);
         }
     
-        document.querySelectorAll("#root a").forEach(function(link){
-            link.addEventListener("click", function(event){
+        document.querySelectorAll("#root a").forEach((link) => {
+            link.addEventListener("click", (event) => {
+                if(!["", "_self"].includes(link.target)){ return; }
                 event.preventDefault();
     
                 let element = event.target;
@@ -132,8 +137,12 @@ class Slick{
                 }
     
                 this.updateUrl(Slick.getPathFromLocation(url));
-            }.bind(this));
-        }.bind(this));
+            });
+        });
+
+        this.onloadListeners.forEach(async (fnc) => {
+            await fnc();
+        });
     }
 }
 

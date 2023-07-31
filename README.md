@@ -52,13 +52,15 @@ Voici toutes les propriétés et leurs valeures possibles:
 ```jsx
 const title = "Header";
 
+const head = `<meta name="keywords" content="HTML, CSS, JavaScript">`;
+
 module.exports = {
     path: "__app__", // Ce paramètre ne peut être modifié
 
     configuration: {
         lang: "fr", // <html lang="">
         default404: "/", // Url de la page 404
-        onrequest: null || async function(req, res){
+        onrequest: null || async function(_req, res){
             if(...){
                 res.status(200).send("Erreur");
                 return false; // Empeche le chargement de la page
@@ -69,7 +71,7 @@ module.exports = {
     },
 
     renders: {
-        getMessage: async function(req){ // Exemple de fonction retournant le contenu de la variable titre dans un h1
+        getTitle: async function(_req){
             return <template>
                 <h1>{title}</h1>
             </template>;
@@ -77,13 +79,15 @@ module.exports = {
     },
 
     styles: [
-        "/styles/index.css" // Url des styles
+        "/styles/__app__.css" // Url des styles
     ],
     scripts: [
-        "/scripts/index.js" // Url des scripts
+        "/scripts/__app__.js" // Url des scripts
     ],
 
-    head: null || <template></template>,
+    head: null || <template></template> || function(_req){
+        return head;
+    },
 
     // #root est requis
     body: <template>
@@ -98,11 +102,13 @@ Pour créer une nouvelle page, créez un fichier `/pages/<name>.jsx` et ajoutez 
 ```js
 const message = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum beatae sed facilis excepturi soluta eligendi deleniti, et tempore autem voluptatum voluptate quos iusto ipsam fugiat repellat eveniet culpa provident laborum!";
 
+const head = `<meta name="keywords" content="HTML, CSS, JavaScript">`;
+
 module.exports = {
     path: "/",
 
     renders: {
-        getMessage: async function(req){
+        getMessage: async function(_req){
             return <template>
                 <p>{message}</p>
             </template>;
@@ -119,15 +125,15 @@ module.exports = {
         "/scripts/index.js"
     ],
 
-    head: <template>
-        
-    </template>,
+    head: <template></template> || function(_req){
+        return head;
+    },
 
     body: <template>
         {getMessage()}
     </template>,
 
-    canload: null || async function(req, res){
+    canload: null || async function(_req, _res){
         if(...){
             return "/login"; // Redirige vers l'url indiqué
         }
