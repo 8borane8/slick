@@ -14,7 +14,7 @@ class Slick{
         return location.pathname + location.hash + location.search;
     }
 
-    static linkClickEvent(event){
+    linkClickEvent(event){
         if(!["", "_self"].includes(link.target)){ return; }
         event.preventDefault();
 
