@@ -155,9 +155,9 @@ async function createDOM(page, req, res) {
         <title>${page.title}</title>
 
         ${styles.join("\n")}
-        ${__pages__.get("__app__").head == null ? "" : __pages__.get("__app__").head}
+        ${typeof __pages__.get("__app__").head == "function" ? await __pages__.get("__app__").head(req) : __pages__.get("__app__").head}
         <link rel="icon shortcut" href="${page.icon == null ? '' : page.icon}">
-        ${page.head == null ? "" : page.head}
+        ${typeof page.head == "function" ? await page.head(req) : page.head}
     </head>
     <body>
         ${body}
@@ -218,7 +218,7 @@ __server__.setNotFoundEndpointFunction(async function(req, res){
             icon: page.icon,
             styles: page.styles.map(style => `${style}?slick-notrequired`),
             scripts: page.scripts.map(script => `${script}?slick-notrequired`),
-            head: page.head,
+            head: typeof page.head == "function" ? await page.head(req) : page.head,
             body: await compileBody(page, req)
         });
         return;

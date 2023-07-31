@@ -1,6 +1,6 @@
 {
 	"name": "@borane/slick",
-	"version": "2.1.9",
+	"version": "2.2.0",
 	"description": "Slick est un framework permettant la création de Single Page Application en utilisant du Server Side Rendering.",
 	"author": "Borane#9999",
 	"license": "ISC",
@@ -21,7 +21,7 @@
 	"bugs": "https://github.com/8borane8/slick/issues",
 	"bin": "src/index.js",
 	"dependencies": {
-		"@borane/expressapi": "^1.2.7",
+		"@borane/expressapi": "1.2.8",
 		"clean-css": "^5.3.2",
 		"mime": "^3.0.0",
 		"uglify-js": "^3.17.4"
