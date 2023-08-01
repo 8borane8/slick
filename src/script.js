@@ -15,11 +15,13 @@ class Slick{
     }
 
     linkClickEvent(event){
-        if(!["", "_self"].includes(link.target)){ return; }
-        event.preventDefault();
-
         let element = event.target;
         while(element.nodeName != "A"){ element = element.parentNode; }
+
+        if(!["", "_self"].includes(element.target)){
+            return;
+        }
+        event.preventDefault();
 
         const url = new URL(element.href);
         if(window.location.host != url.host){
@@ -123,21 +125,7 @@ class Slick{
         }
     
         document.querySelectorAll("#root a").forEach((link) => {
-            link.addEventListener("click", (event) => {
-                if(!["", "_self"].includes(link.target)){ return; }
-                event.preventDefault();
-    
-                let element = event.target;
-                while(element.nodeName != "A"){ element = element.parentNode; }
-    
-                const url = new URL(element.href);
-                if(window.location.host != url.host){
-                    window.location.href = url.href;
-                    return;
-                }
-    
-                this.updateUrl(Slick.getPathFromLocation(url));
-            });
+            link.addEventListener("click", this.linkClickEvent.bind(this));
         });
 
         this.onloadListeners.forEach(async (fnc) => {
