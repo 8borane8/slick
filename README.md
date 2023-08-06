@@ -46,24 +46,26 @@ npm run build
 Slick requiert un fichier pour s'initialiser. Créez un fichier `index.jsx`.
 Ajoutez le contenu suivant dans ce fichier.
 ```js
-const { Slick } = require("@borane/slick");
+(async function(){
 
-const workingDirectory = import.meta.url.slice(8).split("/").slice(0, -1).join("/");
+    const { Slick } = await import("@borane/slick/src/server/Slick.js");
 
-const slick = new Slick(workingDirectory, {
-    port: 5005,
-    development: true,
-    alias: {
-        "/favicon.ico": "/assets/favicon.ico",
-        "/robots.txt": "/assets/robots.txt"
-    },
-    redirect_404: "/",
-    config: {
-        apiUrl: "http://127.0.0.1:5050"
-    }
-});
+    const slick = new Slick(__dirname, {
+        port: 5005,
+        development: true,
+        alias: {
+            "/favicon.ico": "/assets/favicon.ico",
+            "/robots.txt": "/assets/robots.txt"
+        },
+        redirect_404: "/",
+        config: {
+            apiUrl: "http://127.0.0.1:5050"
+        }
+    });
+    
+    await slick.run();
 
-slick.run();
+})();
 ```
 
 Slick requiert une "App Page". Créez un fichier `/pages/app.jsx`.
