@@ -23,17 +23,8 @@ mkdir pages styles scripts assets
 npm init -y
 npm i @borane/slick
 npm i nodemon --save-dev
-npm pkg delete scripts.test main keywords license
-npm pkg set scripts.dev="nodemon --ext * --exec slick --port=5000 --dev" scripts.build="slick --port=5000"
-```
-
-Créez les fichiers `/pages/__app__.jsx` et `/pages/index.jsx`.
-Vous pouvez vous aider des exemples présent [ici](exemples/)
-
-Pour lancer le projet executez l'une des commandes suivantes:
-```
-npm run dev
-npm run build
+npm pkg delete scripts main keywords license
+npm pkg set scripts.dev="nodemon --ext * --exec index.js" scripts.build="node index.js"
 ```
 
 Par la suite nous vous conseillons de modifier les champs ci-dessous présents dans le fichier `package.json`:
@@ -44,103 +35,106 @@ description
 author
 ```
 
+Pour lancer le projet executez l'une des commandes suivantes:
+```
+npm run dev
+npm run build
+```
+
 ## Documentation
 
-Slick requiert un fichier de configuration, il est généralement nommé `/pages/__app__.jsx`.
+Slick requiert un fichier pour s'initialiser. Créez un fichier `index.jsx`.
+Ajoutez le contenu suivant dans ce fichier.
+```js
+const { Slick } = require("@borane/slick");
+
+const workingDirectory = import.meta.url.slice(8).split("/").slice(0, -1).join("/");
+
+const slick = new Slick(workingDirectory, {
+    port: 5005,
+    development: true,
+    alias: {
+        "/favicon.ico": "/assets/favicon.ico",
+        "/robots.txt": "/assets/robots.txt"
+    },
+    redirect_404: "/",
+    config: {
+        apiUrl: "http://127.0.0.1:5050"
+    }
+});
+
+slick.run();
+```
+
+Slick requiert une "App Page". Créez un fichier `/pages/app.jsx`.
 Voici toutes les propriétés et leurs valeures possibles:
+```js
+const title = "Bienvenue sur Slick !";
+console.log(config); // Vous avez access à l'argument config défini plus haut.
 
-```jsx
-const title = "Header";
+return {
+    url: "app", // Ne pas changer.
 
-const head = `<meta name="keywords" content="HTML, CSS, JavaScript">`;
-
-module.exports = {
-    path: "__app__", // Ce paramètre ne peut être modifié
-
-    configuration: {
-        lang: "fr", // <html lang="">
-        default404: "/", // Url de la page 404
-        onrequest: null || async function(_req, res){
-            if(...){
-                res.status(200).send("Erreur");
-                return false; // Empeche le chargement de la page
-            }
-            
-            return true; // Autorise le chargement de la page
-        }
-    },
-
-    renders: {
-        getTitle: async function(_req){
-            return <template>
-                <h1>{title}</h1>
-            </template>;
-        }
-    },
-
-    styles: [
-        "/styles/__app__.css" // Url des styles
+    styles: [ // Url des styles.
+        "/styles/app.css"
     ],
-    scripts: [
-        "/scripts/__app__.js" // Url des scripts
+    scripts: [ // Url des scripts.
+        "/scripts/app.js"
     ],
 
-    head: null || <template></template> || function(_req){
-        return head;
+    head: <template></template> || async function(req){
+        return <template></template>;
     },
 
-    // #root est requis
+     // Require un container avec id ="app".
     body: <template>
-        <header>{getTitle()}</header>
-        <div id="root"></div>
-    </template>,
-}
+        <h1>{title}</h1>
+        <div id="app"></div>
+    </template> || async function(req){
+        return <template>
+            <h1>{title}</h1>
+            <div id="app"></div>
+        </template>;
+    },
+
+    onrequest: null || async function(req, res){
+        if(true)
+            return true;
+
+        res.status(400).send("Error.");
+        return false;
+    }
+};
 ```
 
 Pour créer une nouvelle page, créez un fichier `/pages/<name>.jsx` et ajoutez y cet exemple:
 
 ```js
-const message = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum beatae sed facilis excepturi soluta eligendi deleniti, et tempore autem voluptatum voluptate quos iusto ipsam fugiat repellat eveniet culpa provident laborum!";
+return {
+    url: "/", // Url de la page.
 
-const head = `<meta name="keywords" content="HTML, CSS, JavaScript">`;
-
-module.exports = {
-    path: "/",
-
-    renders: {
-        getMessage: async function(_req){
-            return <template>
-                <p>{message}</p>
-            </template>;
-        }
-    },
-
-    title: "Test",
-    icon: null || "/assets/favicon.ico",
-
-    styles: [
+    styles: [ // Url des styles.
         "/styles/index.css"
     ],
-    scripts: [
+    scripts: [ // Url des scripts.
         "/scripts/index.js"
     ],
 
-    head: <template></template> || function(_req){
-        return head;
+    head: <template></template> || async function(req){
+        return <template></template>;
     },
 
-    body: <template>
-        {getMessage()}
-    </template>,
+    body: <template></template> || async function(req){
+        return <template></template>;
+    },
 
-    canload: null || async function(_req, _res){
-        if(...){
-            return "/login"; // Redirige vers l'url indiqué
-        }
-        
-        return true; // Autorise le chargement de la page
+    canload: null || async function(req, res){
+        if(true)
+            return true;
+
+        return "/login";
     }
-}
+};
 ```
 
 ## Disclamer
