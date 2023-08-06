@@ -1,137 +1,106 @@
 class Slick{
-    constructor(){
-        // Initialisation des variables
-        this.onloadListeners = []
-        this.lastUrl = Slick.getPathFromLocation(window.location) ;
-        this.favicon = document.querySelector("link[rel='icon shortcut']");
+    static #favicon = document.querySelector("link[rel='icon shortcut']");
+    static #appName = "app";
+    static #app = document.querySelector(`#${Slick.#appName}`);
+    static #onloadListeners = [];
 
-        // Ajout des events
-        this.addEventsListener();
+    static {
+        document.addEventListener("DOMContentLoaded", Slick.#onload);
+
+        window.addEventListener("popstate", async (event) => await Slick.updateUrl(Slick.#getPathFromLocation(event.target.location)));
+        document.querySelectorAll(`a:not(#${Slick.#appName} a)`).forEach(link => link.addEventListener("click", Slick.#aClickEvent));
     }
 
-    // Déclaration de la fonction statique permettant de récupérer le chemin à partir de l'objet Location
-    static getPathFromLocation(location){
+    static async #aClickEvent(event){
+        if(!["", "_self"].includes(event.target.target))
+            return;
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        const url = new URL(event.target.href);
+        if(window.location.host != url.host)
+            window.location.href = url.href;
+
+        await Slick.updateUrl(Slick.#getPathFromLocation(url));
+    }
+
+    static #getPathFromLocation(location){
         return location.pathname + location.hash + location.search;
     }
 
-    linkClickEvent(event){
-        let element = event.target;
-        while(element.nodeName != "A"){ element = element.parentNode; }
-
-        if(!["", "_self"].includes(element.target)){
-            return;
-        }
-        event.preventDefault();
-
-        const url = new URL(element.href);
-        if(window.location.host != url.host){
-            window.location.href = url.href;
-            return;
-        }
-
-        this.updateUrl(Slick.getPathFromLocation(url));
+    static async #onload(){
+        const element = window.location.hash == "" ? null : document.getElementById(window.location.hash.substring(1));
+        if(element == null)
+            window.scrollTo(0, 0);
+        else
+            element.scrollIntoView({ behavior: "smooth" });
+    
+        document.querySelectorAll(`#${Slick.#appName} a`).forEach(link => link.addEventListener("click", Slick.#aClickEvent));
+        for(let fnc of Slick.#onloadListeners)
+            await fnc();
     }
 
-    addEventsListener(){
-        document.addEventListener("DOMContentLoaded", this.onload.bind(this));
-        window.addEventListener("popstate", (event) => {
-            this.updateUrl(Slick.getPathFromLocation(event.target.location));
-        });
-
-        document.querySelectorAll("a:not(:root #root a)").forEach((link) => {
-            link.addEventListener("click", this.linkClickEvent.bind(this))
-        });
-    }
-
-    updateHtmlContent(page, styles) {
-        document.getElementById("root").innerHTML = page.body;
+    static #updateHtmlContent(page, oldStyles){
+        Slick.#app.innerHTML = page.body;
     
-        // Suppression des anciens styles et scripts
-        styles.forEach(s => s.remove());
-        Array.from(document.querySelectorAll("script[type='application/javascript']")).filter(s => s.src.endsWith("?slick-notrequired")).forEach(s => s.remove());
+        oldStyles.forEach(s => s.remove());
+        document.querySelectorAll("script[slick-not-required='']").forEach(s => s.remove());
     
-        // Ajout des nouveaux scripts
         page.scripts.forEach((src) => {
             const script = document.createElement("script");
             script.setAttribute("type", "application/javascript");
+            script.setAttribute("slick-not-required", "");
             script.setAttribute("src", src);
     
             document.body.appendChild(script);
         });
     
-        this.onload();
-    }
-    
-    updateUrl(url) {
-        fetch(url, {
-            method: "POST",
-            cache: "no-cache"
-        }).then(response => response.json()).then((page) => {
-            url = new URL(url, window.location.href);
-    
-            // Mise à jour de l'url
-            if(url.pathname == page.path){ window.history.pushState({}, "", url); }
-            else{ window.history.pushState({}, "", page.path); }
-    
-            this.lastUrl = Slick.getPathFromLocation(window.location)
-    
-            // Mise à jour du titre et de l'icon
-            document.title = page.title;
-            this.favicon.href = page.icon == null ? "" : page.icon;
-    
-            // Mise à jour du head
-            Array.from(document.head.children).slice(Array.from(document.head.children).indexOf(this.favicon) + 1).forEach(e => e.remove());
-            this.favicon.insertAdjacentHTML("afterend", page.head);
-    
-            // Récupération des anciens styles
-            const styles = Array.from(document.querySelectorAll("link[rel='stylesheet']"))
-                .filter(s => s.href.endsWith("?slick-notrequired"));
-
-            if(page.styles.length == 0){
-                this.updateHtmlContent(page, styles);
-                return;
-            }
-    
-            // Ajout des nouvaux styles
-            let stylesLoadedCount = 0;
-            page.styles.forEach((href) => {
-                const style = document.createElement("link");
-                style.setAttribute("rel", "stylesheet");
-                style.setAttribute("href", href);
-    
-                style.addEventListener("load", () => {
-                    stylesLoadedCount++;
-                    if (stylesLoadedCount === page.styles.length) {
-                        this.updateHtmlContent(page, styles);
-                    }
-                });
-    
-                document.querySelector("title").insertAdjacentElement("afterend", style);
-            });
-        });
+        Slick.#onload();
     }
 
-    // Fonction executée au chargement de la page
-    onload() {
-        if(window.location.hash != ""){
-            const element = document.getElementById(window.location.hash.substring(1));
-            if(element != null){
-                element.scrollIntoView({ behavior: "smooth" });
-            }else{
-                window.scrollTo(0, 0);
-            }
-        }else{
-            window.scrollTo(0, 0);
+    static addOnloadListener(fnc){
+        Slick.#onloadListeners.push(fnc);
+    }
+
+    static async updateUrl(url){
+        const page = await (await fetch(url, {
+            method: "POST"
+        })).json();
+
+        if(url.pathname == page.url)
+            window.history.pushState({}, "", url);
+        else
+            window.history.pushState({}, "", page.url);
+
+        document.title = page.title;
+        Slick.#favicon.href = page.favicon;
+
+        const headChildren = Array.from(document.head.children);
+        headChildren.slice(headChildren.indexOf(Slick.#favicon) + 1).forEach(e => e.remove());
+        Slick.#favicon.insertAdjacentHTML("afterend", page.head);
+
+        const oldStyles = document.querySelectorAll("link[rel='stylesheet'][slick-not-required='']");
+
+        if(page.styles.length == 0){
+            Slick.#updateHtmlContent(page, oldStyles);
+            return;
         }
-    
-        document.querySelectorAll("#root a").forEach((link) => {
-            link.addEventListener("click", this.linkClickEvent.bind(this));
-        });
 
-        this.onloadListeners.forEach(async (fnc) => {
-            await fnc();
+        let stylesLoadedCount = 0;
+        page.styles.forEach((href) => {
+            const style = document.createElement("link");
+            style.setAttribute("rel", "stylesheet");
+            style.setAttribute("slick-not-required", "");
+            style.setAttribute("href", href);
+
+            style.addEventListener("load", () => {
+                stylesLoadedCount++;
+                if (stylesLoadedCount === page.styles.length)
+                    Slick.#updateHtmlContent(page, oldStyles);
+            });
+
+            Slick.#favicon.insertAdjacentElement("beforebegin", style);
         });
     }
 }
-
-const SLICK = new Slick();
