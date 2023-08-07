@@ -1,4 +1,9 @@
 export class Page{
+    #url;
+
+    #title;
+    #favicon;
+
     #head;
     #body;
 
@@ -6,10 +11,10 @@ export class Page{
     #scripts;
 
     constructor(options){
-        this.url = options.url;
+        this.#url = options.url;
 
-        this.title = options.title ?? "";
-        this.favicon = options.favicon ?? "";
+        this.#title = options.title ?? "";
+        this.#favicon = options.favicon ?? "";
 
         this.#styles = options.styles;
         this.#scripts = options.scripts;
@@ -19,6 +24,18 @@ export class Page{
 
         this.canload = options.canload ?? null;
         this.onrequest = options.onrequest ?? null;
+    }
+
+    getUrl(){
+        return this.#url;
+    }
+
+    getTitle(){
+        return this.#title;
+    }
+
+    getFavicon(){
+        return this.#favicon;
     }
 
     getStyles(required = false){
@@ -39,8 +56,10 @@ export class Page{
 
     async getPostReponse(req){
         return {
-            title: this.title,
-            favicon: this.favicon,
+            url: req.url,
+
+            title: this.#title,
+            favicon: this.#favicon,
 
             styles: this.#styles,
             scripts: this.#scripts,

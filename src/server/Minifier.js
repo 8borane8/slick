@@ -7,18 +7,16 @@ export class Minifier{
     #cssMinifier = new cleancss();
 
     getMinifiedFile(filePath, notRequired, mimeType){
-        if(this.#cache.has(filePath)){
+        if(this.#cache.has(filePath))
             return this.#cache.get(filePath);
-        }
 
         const cachedFile = {
             content: null,
             timestamp: Date.now()
         };
 
-        if(mimeType == "text/css"){
+        if(mimeType == "text/css")
             cachedFile.content = this.#cssMinifier.minify(fs.readFileSync(filePath, { encoding: "utf-8"})).styles;
-        }
         else if(mimeType == "application/javascript"){
             let content = fs.readFileSync(filePath, { encoding: "utf-8"});
             if(notRequired)
