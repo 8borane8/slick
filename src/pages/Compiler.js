@@ -39,6 +39,8 @@ export class Compiler{
             return `${p1}${pageBody}${p2}`;
         });
 
+        console.log()
+
         return `<!DOCTYPE html>
 <html lang="en">
     <head>

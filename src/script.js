@@ -8,17 +8,17 @@ class Slick{
         document.addEventListener("DOMContentLoaded", Slick.#onload);
 
         window.addEventListener("popstate", async (event) => await Slick.updateUrl(Slick.#getPathFromLocation(event.target.location)));
-        document.querySelectorAll(`a:not(#${Slick.#appName} a)`).forEach(link => link.addEventListener("click", Slick.#aClickEvent));
+        document.querySelectorAll(`a:not(#${Slick.#appName} a)`).forEach(link => link.addEventListener("click", async (event) => {await Slick.#aClickEvent(link, event)}));
     }
 
-    static async #aClickEvent(event){
-        if(!["", "_self"].includes(event.target.target))
+    static async #aClickEvent(link, event){
+        if(!["", "_self"].includes(link.target))
             return;
 
         event.stopPropagation();
         event.preventDefault();
 
-        const url = new URL(event.target.href);
+        const url = new URL(link.href);
         if(window.location.host != url.host)
             window.location.href = url.href;
 
@@ -45,13 +45,13 @@ class Slick{
         Slick.#app.innerHTML = page.body;
     
         oldStyles.forEach(s => s.remove());
-        document.querySelectorAll("script[slick-not-required='']").forEach(s => s.remove());
+        Array.from(document.querySelectorAll("script")).filter(s => s.src.endsWith("?slick-not-required")).forEach(s => s.remove());
     
         page.scripts.forEach((src) => {
             const script = document.createElement("script");
             script.setAttribute("type", "application/javascript");
             script.setAttribute("slick-not-required", "");
-            script.setAttribute("src", src);
+            script.setAttribute("src", `${src}?slick-not-required`);
     
             document.body.appendChild(script);
         });
