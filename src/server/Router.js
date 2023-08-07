@@ -19,6 +19,8 @@ export class Router{
 
     #sendStaticFile(req, res){
         const filePath = `${this.#slick.getWorkingDirectory()}${req.url}`;
+        const mimeType = mime.getType(filePath);
+        const notRequired = Object.keys(req.query).includes("slick-not-required");
     
         if(!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()){
             res.status(404).send({
@@ -29,12 +31,19 @@ export class Router{
         }
 
         if(this.#slick.development){
-            res.setHeader("Cache-Control", "no-cache");    
+            res.setHeader("Cache-Control", "no-cache");
+            if(mimeType == "application/javascript" && notRequired){
+                res.setHeader("Content-Type", mimeType);
+
+                res.status(200).send(`(async () => {${fs.readFileSync(filePath, { encoding: "utf-8"})}})();`);
+                return;
+            }   
+
             res.status(200).sendFile(filePath);
             return;
         }
 
-        const file = this.#minifier.getMinifiedFile(filePath);
+        const file = this.#minifier.getMinifiedFile(filePath, notRequired, mimeType);
 
         if(req.headers["if-modified-since"] == file.timestamp){
             res.status(304);
@@ -46,13 +55,12 @@ export class Router{
         res.setHeader("ETag", file.timestamp);
         res.setHeader("Last-Modified", file.timestamp);
 
+        res.setHeader("Content-Type", mimeType);
+
         if(file.content == null){
             res.sendFile(filePath);
             return;   
         }
-
-        res.setHeader("Content-Type", mime.getType(filePath));
-        res.setHeader("Content-Length", fs.statSync(filePath).size);
         
         res.status(200).send(file.content);
     }

@@ -32,7 +32,7 @@ export class Page{
     }
 
     getScripts(required = false){
-        return this.#scripts.map(script => `<script type="application/javascript"${required ? "" : " slick-not-required"} src="${script}"></script>`);
+        return this.#scripts.map(script => `<script type="application/javascript" src="${script}${required ? "" : "?slick-not-required"}"></script>`);
     }
 
     async getBody(req){

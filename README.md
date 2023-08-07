@@ -48,7 +48,7 @@ Ajoutez le contenu suivant dans ce fichier.
 ```js
 (async function(){
 
-    const { Slick } = await import("@borane/slick/src/server/Slick.js");
+    const { Slick } = await import("@borane/slick");
 
     const slick = new Slick(__dirname, {
         port: 5005,
