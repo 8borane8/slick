@@ -16,14 +16,14 @@ export class PagesManager{
     }
 
     static #loadPagesFromDirectory(path, pages){
-        fs.readdirSync(path, { withFileTypes: true }).forEach((x) => {
+        for(let x of fs.readdirSync(path, { withFileTypes: true })){
             if(x.isDirectory()){
                 pages = PagesManager.#loadPagesFromDirectory(`${path}/${x.name}`, pages);
                 return;
             }
             
             pages.push(fs.readFileSync(`${path}/${x.name}`, { encoding: "utf-8"}));
-        });
+        }
 
         return pages;
     }
@@ -36,12 +36,12 @@ export class PagesManager{
         const pages = PagesManager.#loadPagesFromDirectory(path, []);
         for(let page of pages){
             page = new Page(await this.#compiler.compilePage(page));
-            if(page.getUrl() == PagesManager.appName){
+            if(page.url == PagesManager.appName){
                 this.#app = page;
                 continue;
             }
 
-            this.#pages.set(page.getUrl(), page);
+            this.#pages.set(page.url, page);
         }
     }
 
@@ -66,7 +66,7 @@ export class PagesManager{
 
     async sendPageForPostMethod(req, res){
         if(!this.#pages.has(req.url)){
-            req.url = this.#slick.redirect_404;
+            req.url = this.#slick.redirect404;
         }
         
         let page = this.#pages.get(req.url);
@@ -87,7 +87,7 @@ export class PagesManager{
         if(this.#app == null)
             throw new Error(`The '${PagesManager.appName}' page does not exist.`);
 
-        if(!this.#pages.has(this.#slick.redirect_404))
+        if(!this.#pages.has(this.#slick.redirect404))
             throw new Error(`The 404 page does not exist.`);
     }
 }

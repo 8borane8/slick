@@ -3,7 +3,7 @@ import uglifyjs from "uglify-js";
 import fs from "fs";
 
 export class Compiler{
-    #script = fs.readFileSync(`${import.meta.url.slice(8).split("/").slice(0, -1).join("/")}/../script.js`, { encoding: "utf-8"});
+    #script = fs.readFileSync(`${new URL('.', import.meta.url).pathname}/../script.js`, { encoding: "utf-8"});
     #bodyRegex;
     #slick;
 
