@@ -1,4 +1,5 @@
 import { PagesManager } from "./../pages/PagesManager.js";
+import { Config } from "./Config.js";
 import { Router } from "./Router.js";
 import fs from "fs";
 
@@ -8,21 +9,18 @@ export class Slick{
     #workingDirectory;
     #pagesManager;
     #router;
+    #config;
 
     constructor(workingDirectory, options = {}){
         this.#workingDirectory = workingDirectory;
+        this.#config = new Config(options);
 
-        this.port = options.port ?? 5000;
-        this.development = options.development ?? false;
-        this.alias = options.alias ?? {
-            "/favicon.ico": "/assets/favicon.ico",
-            "/robots.txt": "/assets/robots.txt"
-        };
-        this.redirect404 = options.redirect404 ?? "/";
-        this.config = options.config ?? {};
-
-        this.#pagesManager = new PagesManager(this);
+        this.#pagesManager = new PagesManager(this.#config);
         this.#router = new Router(this);
+    }
+
+    getConfig(){
+        return this.#config;
     }
 
     getWorkingDirectory(){
@@ -34,17 +32,16 @@ export class Slick{
     }
 
     #preventErrors(){
-        Slick.#requiredFolders.forEach((f) => {
-            if(fs.existsSync(`${this.workingDirectory}/${f}`)){
-                throw new Error(`The foder named '${f}' could not be found.`);
-            }
-        });
+        for(let folder of Slick.#requiredFolders){
+            if(!fs.existsSync(`${this.#workingDirectory}/${folder}`))
+                throw new Error(`The folder named '${folder}' does not exist.`);
+        }
 
         this.#pagesManager.preventErrors();
     }
 
     async run(){
-        await this.#pagesManager.loadPages(`${this.#workingDirectory}/pages`);
+        await this.#pagesManager.loadPages(this.#workingDirectory);
 
         this.#preventErrors();
         this.#router.listen();

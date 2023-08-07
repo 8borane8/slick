@@ -13,7 +13,7 @@ export class Router{
     constructor(slick){
         this.#slick = slick;
 
-        this.#httpServer = new HttpServer(this.#slick.port);
+        this.#httpServer = new HttpServer(this.#slick.getConfig().getPort());
         this.#httpServer.setNotFoundEndpointFunction(this.#requestListener.bind(this))
     }
 
@@ -30,7 +30,7 @@ export class Router{
             return;
         }
 
-        if(this.#slick.development){
+        if(process.env.DEVELOPMENT ?? false){
             res.setHeader("Cache-Control", "no-cache");
             if(mimeType == "application/javascript" && notRequired){
                 res.setHeader("Content-Type", mimeType);
@@ -66,8 +66,8 @@ export class Router{
     }
 
     async #requestListener(req, res){
-        if(this.#slick.development)
-            console.log(`[${new Date().toString().split("(")[0].slice(0, -1)}] [INFOS] ${req.method} => ${req.url}`);
+        if(process.env.DEVELOPMENT ?? false)
+            console.log(`[${new Date().toString().split("(")[0].slice(0, -1)}] [INFO] ${req.method} => ${req.url}`);
 
         const onrequest = this.#slick.getPagesManager().getApp().onrequest;
         if(!(onrequest == null || await onrequest(req, res)))
@@ -78,8 +78,8 @@ export class Router{
             return;
         }
 
-        if(Object.keys(this.#slick.alias).includes(req.url)){
-            req.url = this.#slick.alias[req.url];
+        if(Object.keys(this.#slick.getConfig().getAlias()).includes(req.url)){
+            req.url = this.#slick.getConfig().getAlias()[req.url];
             this.#sendStaticFile(req, res);
             return;
         }

@@ -8,11 +8,11 @@ export class PagesManager{
     #pages = new Map();
     #app = null;
     #compiler;
-    #slick;
+    #config;
 
-    constructor(slick){
-        this.#slick = slick;
-        this.#compiler = new Compiler(this.#slick);
+    constructor(config){
+        this.#config = config;
+        this.#compiler = new Compiler(this.#config);
     }
 
     static #loadPagesFromDirectory(path, pages){
@@ -32,16 +32,15 @@ export class PagesManager{
         return this.#app;
     }
 
-    async loadPages(path){
-        const pages = PagesManager.#loadPagesFromDirectory(path, []);
-        for(let page of pages){
+    async loadPages(workingDirectory){
+        for(let page of PagesManager.#loadPagesFromDirectory(`${workingDirectory}/pages`, [])){
             page = new Page(await this.#compiler.compilePage(page));
-            if(page.url == PagesManager.appName){
+            if(page.getUrl() == PagesManager.appName){
                 this.#app = page;
                 continue;
             }
 
-            this.#pages.set(page.url, page);
+            this.#pages.set(page.getUrl(), page);
         }
     }
 
@@ -50,7 +49,6 @@ export class PagesManager{
             return null;
         }
 
-        // TODO: canload
         const page = this.#pages.get(req.url);
         if(page.canload != null){
             const canload = await page.canload(req, res);
@@ -66,7 +64,7 @@ export class PagesManager{
 
     async sendPageForPostMethod(req, res){
         if(!this.#pages.has(req.url)){
-            req.url = this.#slick.redirect404;
+            req.url = this.#config.getRedirect404();
         }
         
         let page = this.#pages.get(req.url);
@@ -78,16 +76,14 @@ export class PagesManager{
             }
         }
 
-        const response = await page.getPostReponse();
-        response.url = req.url;
-        res.status(200).send(response);
+        res.status(200).send(await page.getPostReponse(req));
     }
 
     preventErrors(){
         if(this.#app == null)
             throw new Error(`The '${PagesManager.appName}' page does not exist.`);
 
-        if(!this.#pages.has(this.#slick.redirect404))
+        if(!this.#pages.has(this.#config.getRedirect404()))
             throw new Error(`The 404 page does not exist.`);
     }
 }

@@ -50,17 +50,19 @@ Ajoutez le contenu suivant dans ce fichier.
 
     const { Slick } = await import("@borane/slick");
 
+    process.env.DEVELOPMENT = true;
+
     const slick = new Slick(__dirname, {
         port: 5005,
-        development: true,
         alias: {
             "/favicon.ico": "/assets/favicon.ico",
             "/robots.txt": "/assets/robots.txt"
         },
         redirect404: "/",
+        lang: "fr",
         config: {
             apiUrl: "http://127.0.0.1:5050"
-        }
+        },
     });
     
     await slick.run();
