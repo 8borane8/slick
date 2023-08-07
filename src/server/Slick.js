@@ -18,7 +18,7 @@ export class Slick{
             "/favicon.ico": "/assets/favicon.ico",
             "/robots.txt": "/assets/robots.txt"
         };
-        this.redirect_404 = options.redirect_404 ?? "/";
+        this.redirect404 = options.redirect404 ?? "/";
         this.config = options.config ?? {};
 
         this.#pagesManager = new PagesManager(this);

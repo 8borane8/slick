@@ -1,6 +1,4 @@
 export class Page{
-    #url;
-
     #head;
     #body;
 
@@ -8,7 +6,7 @@ export class Page{
     #scripts;
 
     constructor(options){
-        this.#url = options.url;
+        this.url = options.url;
 
         this.title = options.title ?? "";
         this.favicon = options.favicon ?? "";
@@ -21,10 +19,6 @@ export class Page{
 
         this.canload = options.canload ?? null;
         this.onrequest = options.onrequest ?? null;
-    }
-
-    getUrl(){
-        return this.#url;
     }
 
     getStyles(required = false){

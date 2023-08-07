@@ -57,7 +57,7 @@ Ajoutez le contenu suivant dans ce fichier.
             "/favicon.ico": "/assets/favicon.ico",
             "/robots.txt": "/assets/robots.txt"
         },
-        redirect_404: "/",
+        redirect404: "/",
         config: {
             apiUrl: "http://127.0.0.1:5050"
         }

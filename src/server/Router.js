@@ -70,7 +70,7 @@ export class Router{
             console.log(`[${new Date().toString().split("(")[0].slice(0, -1)}] [INFOS] ${req.method} => ${req.url}`);
 
         const onrequest = this.#slick.getPagesManager().getApp().onrequest;
-        if(onrequest != null && await onrequest(req, res) == false)
+        if(!(onrequest == null || await onrequest(req, res)))
             return;
 
         if(Router.#staticFolders.filter(x => req.url.startsWith(x)).length == 1){
