@@ -1,106 +1,118 @@
-class Slick{
-    static #favicon = document.querySelector("link[rel='icon shortcut']");
-    static #appName = "app";
-    static #app = document.querySelector(`#${Slick.#appName}`);
-    static #onloadListeners = [];
+class Slick {
+    static _favicon = document.querySelector("link[rel='icon shortcut']");
+    static _appName = "app";
+    static _app = document.querySelector(`#${Slick._appName}`);
+    static _onloadListeners = [];
 
-    static {
-        document.addEventListener("DOMContentLoaded", Slick.#onload);
+    static initialize() {
+        document.addEventListener("DOMContentLoaded", () => Slick._onload());
 
-        window.addEventListener("popstate", async (event) => await Slick.updateUrl(Slick.#getPathFromLocation(event.target.location)));
-        document.querySelectorAll(`a:not(#${Slick.#appName} a)`).forEach(link => link.addEventListener("click", async (event) => {await Slick.#aClickEvent(link, event)}));
+        window.addEventListener("popstate", async () => {
+            await Slick.updateUrl(Slick._getPathFromLocation(window.location));
+        });
+
+        for (let link of document.querySelectorAll(`a:not(#${Slick._appName} a)`)){
+            link.addEventListener("click", async (event) => {
+                await Slick._aClickEvent(link, event);
+            });
+        }
     }
 
-    static async #aClickEvent(link, event){
-        if(!["", "_self"].includes(link.target))
+    static async _aClickEvent(link, event) {
+        if (!["", "_self"].includes(link.target))
             return;
 
         event.stopPropagation();
         event.preventDefault();
 
         const url = new URL(link.href);
-        if(window.location.host != url.host)
+        if (window.location.host !== url.host)
             window.location.href = url.href;
 
-        await Slick.updateUrl(Slick.#getPathFromLocation(url));
+        await Slick.updateUrl(Slick._getPathFromLocation(url));
     }
 
-    static #getPathFromLocation(location){
+    static _getPathFromLocation(location) {
         return location.pathname + location.hash + location.search;
     }
 
-    static async #onload(){
-        const element = window.location.hash == "" ? null : document.getElementById(window.location.hash.substring(1));
-        if(element == null)
+    static async _onload() {
+        for (let link of document.querySelectorAll(`#${Slick._appName} a`)) {
+            link.addEventListener("click", async (event) => {
+                await Slick._aClickEvent(link, event);
+            });
+        }
+
+        const element = window.location.hash === "" ? null : document.getElementById(window.location.hash.substring(1));
+        if (element === null)
             window.scrollTo(0, 0);
         else
             element.scrollIntoView({ behavior: "smooth" });
-    
-        document.querySelectorAll(`#${Slick.#appName} a`).forEach(link => link.addEventListener("click", Slick.#aClickEvent));
-        for(let fnc of Slick.#onloadListeners)
-            await fnc();
+
+        Slick._onloadListeners.forEach(async (fnc) => await fnc());
     }
 
-    static #updateHtmlContent(page, oldStyles){
-        Slick.#app.innerHTML = page.body;
-    
+    static _updateHtmlContent(page, oldStyles) {
+        Slick._app.innerHTML = page.body;
+
         oldStyles.forEach(s => s.remove());
-        Array.from(document.querySelectorAll("script")).filter(s => s.src.endsWith("?slick-not-required")).forEach(s => s.remove());
-    
-        page.scripts.forEach((src) => {
+        Array.from(document.querySelectorAll("script")).filter(s => s.src.endsWith("?Slick-not-required")).forEach(s => s.remove());
+
+        for(let src of page.scripts){
             const script = document.createElement("script");
             script.setAttribute("type", "application/javascript");
-            script.setAttribute("slick-not-required", "");
-            script.setAttribute("src", `${src}?slick-not-required`);
+            script.setAttribute("Slick-not-required", "");
+            script.setAttribute("src", `${src}?Slick-not-required`);
     
             document.body.appendChild(script);
-        });
-    
-        Slick.#onload();
+        }
+
+        Slick._onload();
     }
 
-    static addOnloadListener(fnc){
-        Slick.#onloadListeners.push(fnc);
+    static addOnloadListener(fnc) {
+        Slick._onloadListeners.push(fnc);
     }
 
-    static async updateUrl(url){
-        const page = await (await fetch(url, {
-            method: "POST"
-        })).json();
+    static async updateUrl(url) {
+        const page = await (await fetch(url, { method: "POST" })).json();
 
-        if(url.pathname == page.url)
+        if (url.pathname === page.url) 
             window.history.pushState({}, "", url);
         else
             window.history.pushState({}, "", page.url);
 
         document.title = page.title;
-        Slick.#favicon.href = page.favicon;
+        Slick._favicon.href = page.favicon;
 
         const headChildren = Array.from(document.head.children);
-        headChildren.slice(headChildren.indexOf(Slick.#favicon) + 1).forEach(e => e.remove());
-        Slick.#favicon.insertAdjacentHTML("afterend", page.head);
+        headChildren.slice(headChildren.indexOf(Slick._favicon) + 1).forEach(e => e.remove());
+        Slick._favicon.insertAdjacentHTML("afterend", page.head);
 
-        const oldStyles = document.querySelectorAll("link[rel='stylesheet'][slick-not-required='']");
+        const oldStyles = document.querySelectorAll("link[rel='stylesheet'][Slick-not-required='']");
 
         if(page.styles.length == 0){
-            Slick.#updateHtmlContent(page, oldStyles);
+            Slick._updateHtmlContent(page, oldStyles);
             return;
         }
 
         let stylesLoadedCount = 0;
-        page.styles.forEach((href) => {
+        for (let href of page.styles) {
             const style = document.createElement("link");
             style.setAttribute("rel", "stylesheet");
-            style.setAttribute("slick-not-required", "");
+            style.setAttribute("Slick-not-required", "");
             style.setAttribute("href", href);
 
             style.addEventListener("load", () => {
                 stylesLoadedCount++;
-                if (stylesLoadedCount === page.styles.length)
-                    Slick.#updateHtmlContent(page, oldStyles);
+                if (stylesLoadedCount === page.styles.length) {
+                    Slick._updateHtmlContent(page, oldStyles);
+                }
             });
 
-            Slick.#favicon.insertAdjacentElement("beforebegin", style);
-        });
+            Slick._favicon.insertAdjacentElement("beforebegin", style);
+        }
     }
 }
+
+Slick.initialize();

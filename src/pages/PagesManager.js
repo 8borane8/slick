@@ -19,7 +19,7 @@ export class PagesManager{
         for(let x of fs.readdirSync(path, { withFileTypes: true })){
             if(x.isDirectory()){
                 pages = PagesManager.#loadPagesFromDirectory(`${path}/${x.name}`, pages);
-                return;
+                continue;
             }
             
             pages.push(fs.readFileSync(`${path}/${x.name}`, { encoding: "utf-8"}));

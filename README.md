@@ -16,7 +16,7 @@ Slick est un framework permettant la création de Single Page Application en uti
 ## Installation
 
 Afin de démarrer un projet avec Slick, vous devez installer [NodeJS](https://nodejs.org/).
-Exécuter ensuite les commandes ci-dessous:
+Exécutez ensuite les commandes ci-dessous:
 ```
 mkdir Nouveau_Projet && cd Nouveau_Projet
 mkdir pages styles scripts assets
@@ -27,7 +27,7 @@ npm pkg delete scripts main keywords license
 npm pkg set scripts.dev="nodemon --ext * --exec index.js" scripts.build="node index.js"
 ```
 
-Par la suite nous vous conseillons de modifier les champs ci-dessous présents dans le fichier `package.json`:
+Par la suite nous vous conseillons de modifier les champs présents dans le fichier `package.json`:
 ```
 name
 version
@@ -35,7 +35,7 @@ description
 author
 ```
 
-Pour lancer le projet executez l'une des commandes suivantes:
+Pour lancer le projet vous pouvez executer l'une des commandes suivantes:
 ```
 npm run dev
 npm run build
@@ -43,8 +43,7 @@ npm run build
 
 ## Documentation
 
-Slick requiert un fichier pour s'initialiser. Créez un fichier `index.jsx`.
-Ajoutez le contenu suivant dans ce fichier.
+Slick requiert un fichier pour d'initialisation. Créez un fichier `index.js`. Ajoutez y l'exemple suivant.
 ```js
 (async function(){
 
@@ -111,7 +110,7 @@ return {
 };
 ```
 
-Pour créer une nouvelle page, créez un fichier `/pages/<name>.jsx` et ajoutez y cet exemple:
+Pour créer une nouvelle page, créez un fichier `/pages/index.jsx` et ajoutez y cet exemple:
 
 ```js
 return {
