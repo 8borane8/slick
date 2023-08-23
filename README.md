@@ -24,7 +24,7 @@ npm init -y
 npm i @borane/slick
 npm i nodemon --save-dev
 npm pkg delete description author scripts main keywords license
-npm pkg set scripts.dev="nodemon --ext * --exec index.js" scripts.build="node index.js"
+npm pkg set scripts.dev="nodemon --ext * --exec node index.js" scripts.build="node index.js"
 ```
 
 Par la suite nous vous conseillons de modifier les champs présents dans le fichier `package.json`:
