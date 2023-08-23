@@ -23,7 +23,7 @@ mkdir pages styles scripts assets
 npm init -y
 npm i @borane/slick
 npm i nodemon --save-dev
-npm pkg delete scripts main keywords license
+npm pkg delete description author scripts main keywords license
 npm pkg set scripts.dev="nodemon --ext * --exec index.js" scripts.build="node index.js"
 ```
 
