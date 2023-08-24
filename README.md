@@ -116,6 +116,9 @@ Pour créer une nouvelle page, créez un fichier `/pages/index.jsx` et ajoutez y
 return {
     url: "/", // Url de la page.
 
+    title: "Slick" // Titre de la page
+    favicon: null || "/favicon.ico"
+
     styles: [ // Url des styles.
         "/styles/index.css"
     ],
