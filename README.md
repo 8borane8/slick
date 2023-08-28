@@ -23,8 +23,8 @@ mkdir pages styles scripts assets
 npm init -y
 npm i @borane/slick
 npm i nodemon --save-dev
-npm pkg delete scripts main keywords license
-npm pkg set scripts.dev="nodemon --ext * --exec index.js" scripts.build="node index.js"
+npm pkg delete description author scripts main keywords license
+npm pkg set scripts.dev="nodemon --ext * --exec node index.js" scripts.build="node index.js"
 ```
 
 Par la suite nous vous conseillons de modifier les champs présents dans le fichier `package.json`:
@@ -45,28 +45,24 @@ npm run build
 
 Slick requiert un fichier pour d'initialisation. Créez un fichier `index.js`. Ajoutez y l'exemple suivant.
 ```js
-(async function(){
+const { Slick } = require("@borane/slick");
 
-    const { Slick } = await import("@borane/slick");
+process.env.DEVELOPMENT = true;
 
-    process.env.DEVELOPMENT = true;
+const slick = new Slick(__dirname, {
+    port: 5005,
+    alias: {
+        "/favicon.ico": "/assets/favicon.ico",
+        "/robots.txt": "/assets/robots.txt"
+    },
+    redirect404: "/",
+    lang: "fr",
+    config: {
+        apiUrl: "http://127.0.0.1:5050"
+    }
+});
 
-    const slick = new Slick(__dirname, {
-        port: 5005,
-        alias: {
-            "/favicon.ico": "/assets/favicon.ico",
-            "/robots.txt": "/assets/robots.txt"
-        },
-        redirect404: "/",
-        lang: "fr",
-        config: {
-            apiUrl: "http://127.0.0.1:5050"
-        },
-    });
-    
-    await slick.run();
-
-})();
+slick.run();
 ```
 
 Slick requiert une "App Page". Créez un fichier `/pages/app.jsx`.
@@ -115,6 +111,9 @@ Pour créer une nouvelle page, créez un fichier `/pages/index.jsx` et ajoutez y
 ```js
 return {
     url: "/", // Url de la page.
+
+    title: "Slick" // Titre de la page
+    favicon: null || "/favicon.ico"
 
     styles: [ // Url des styles.
         "/styles/index.css"

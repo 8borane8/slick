@@ -1,10 +1,8 @@
-import { Compiler } from "./Compiler.js";
-import { Page } from "./Page.js";
-import fs from "fs";
+const Compiler = require("./Compiler.js");
+const Page = require("./Page.js");
+const fs = require("fs");
 
-export class PagesManager{
-    static appName = "app";
-
+module.exports = class PagesManager{
     #pages = new Map();
     #app = null;
     #compiler;
@@ -15,7 +13,7 @@ export class PagesManager{
         this.#compiler = new Compiler(this.#config);
     }
 
-    static #loadPagesFromDirectory(path, pages){
+    static #loadPagesFromDirectory(path, pages = []){
         for(let x of fs.readdirSync(path, { withFileTypes: true })){
             if(x.isDirectory()){
                 pages = PagesManager.#loadPagesFromDirectory(`${path}/${x.name}`, pages);
@@ -33,9 +31,10 @@ export class PagesManager{
     }
 
     async loadPages(workingDirectory){
-        for(let page of PagesManager.#loadPagesFromDirectory(`${workingDirectory}/pages`, [])){
+        for(let page of PagesManager.#loadPagesFromDirectory(`${workingDirectory}/pages`)){
             page = new Page(await this.#compiler.compilePage(page));
-            if(page.getUrl() == PagesManager.appName){
+            if(page.getUrl() == "app"){ // TODO: paradigme
+                page.setRequired();
                 this.#app = page;
                 continue;
             }
@@ -44,25 +43,15 @@ export class PagesManager{
         }
     }
 
-    async sendPageForGetMethod(req, res){
-        if(!this.#pages.has(req.url)){
-            return null;
-        }
-
-        const page = this.#pages.get(req.url);
-        if(page.canload != null){
-            const canload = await page.canload(req, res);
-            if(canload != true){
-                res.redirect(canload);
-                return;
-            }
-        }
-
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.status(200).send(await this.#compiler.createDOM(this.#app, page, req));
+    async getPage(req, res){
+        await this.#sendPage(req, res, true);
     }
 
-    async sendPageForPostMethod(req, res){
+    async postPage(req, res){
+        await this.#sendPage(req, res);
+    }
+
+    async #sendPage(req, res, isMethodGet = false){
         if(!this.#pages.has(req.url)){
             req.url = this.#config.getRedirect404();
         }
@@ -71,9 +60,20 @@ export class PagesManager{
         if(page.canload != null){
             const canload = await page.canload(req, res);
             if(canload != true){
+                if(isMethodGet){
+                    res.redirect(canload);
+                    return;
+                }
+
                 req.url = canload;
                 page = this.#pages.get(canload.split("#")[0].split("?")[0]);
             }
+        }
+
+        if(isMethodGet){
+            res.setHeader("Content-Type", "text/html; charset=utf-8");
+            res.status(200).send(await this.#compiler.createDOM(this.#app, page, req));
+            return;
         }
 
         res.status(200).send(await page.getPostReponse(req));
@@ -81,7 +81,7 @@ export class PagesManager{
 
     preventErrors(){
         if(this.#app == null)
-            throw new Error(`The '${PagesManager.appName}' page does not exist.`);
+            throw new Error(`The 'app' page does not exist.`);
 
         if(!this.#pages.has(this.#config.getRedirect404()))
             throw new Error(`The 404 page does not exist.`);

@@ -52,17 +52,21 @@ class Slick {
         Slick._onloadListeners.forEach(async (fnc) => await fnc());
     }
 
-    static _updateHtmlContent(page, oldStyles) {
+    static async _updateHtmlContent(page, oldStyles) {
         Slick._app.innerHTML = page.body;
 
         oldStyles.forEach(s => s.remove());
-        Array.from(document.querySelectorAll("script")).filter(s => s.src.endsWith("?Slick-not-required")).forEach(s => s.remove());
+        Array.from(document.querySelectorAll("script[slick-not-required='']")).forEach(s => s.remove());
 
         for(let src of page.scripts){
             const script = document.createElement("script");
             script.setAttribute("type", "application/javascript");
-            script.setAttribute("Slick-not-required", "");
-            script.setAttribute("src", `${src}?Slick-not-required`);
+            script.setAttribute("slick-not-required", "");
+
+            const blob = new Blob([`(async () => {
+                ${await (await fetch(src)).text()}
+            })();`], { type: "application/javascript" });
+            script.setAttribute("src", URL.createObjectURL(blob));
     
             document.body.appendChild(script);
         }
@@ -77,7 +81,7 @@ class Slick {
     static async updateUrl(url) {
         const page = await (await fetch(url, { method: "POST" })).json();
 
-        if (url.pathname === page.url) 
+        if (url.split("?")[0].split("#")[0] == page.url) 
             window.history.pushState({}, "", url);
         else
             window.history.pushState({}, "", page.url);
@@ -89,10 +93,10 @@ class Slick {
         headChildren.slice(headChildren.indexOf(Slick._favicon) + 1).forEach(e => e.remove());
         Slick._favicon.insertAdjacentHTML("afterend", page.head);
 
-        const oldStyles = document.querySelectorAll("link[rel='stylesheet'][Slick-not-required='']");
+        const oldStyles = document.querySelectorAll("link[rel='stylesheet'][slick-not-required='']");
 
         if(page.styles.length == 0){
-            Slick._updateHtmlContent(page, oldStyles);
+            await Slick._updateHtmlContent(page, oldStyles);
             return;
         }
 
@@ -103,10 +107,10 @@ class Slick {
             style.setAttribute("Slick-not-required", "");
             style.setAttribute("href", href);
 
-            style.addEventListener("load", () => {
+            style.addEventListener("load", async () => {
                 stylesLoadedCount++;
                 if (stylesLoadedCount === page.styles.length) {
-                    Slick._updateHtmlContent(page, oldStyles);
+                    await Slick._updateHtmlContent(page, oldStyles);
                 }
             });
 
