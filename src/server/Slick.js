@@ -1,9 +1,12 @@
-import { PagesManager } from "./../pages/PagesManager.js";
-import { Config } from "./Config.js";
-import { Router } from "./Router.js";
-import fs from "fs";
+const PagesManager = require("./../pages/PagesManager.js");
+const Config = require("./Config.js");
+const Router = require("./Router.js");
+const fs = require("fs");
 
-export class Slick{
+
+// TODO: getName -> get name
+
+module.exports = class Slick{
     static #requiredFolders = ["pages", "assets", "styles", "scripts"];
 
     #workingDirectory;

@@ -1,29 +1,24 @@
-import { PagesManager } from "./PagesManager.js";
-import uglifyjs from "uglify-js";
-import fs from "fs";
+const PagesManager = require("./PagesManager.js");
+const uglifyjs = require("uglify-js");
+const fs = require("fs");
+const vm = require("vm");
 
-let __dirname = new URL('.', import.meta.url).pathname;
-if(!fs.existsSync(__dirname))
-    __dirname = __dirname.slice(1);
-
-
-export class Compiler{
-    static #dom = fs.readFileSync(`${__dirname}../dom.html`, { encoding: "utf-8"});
+module.exports = class Compiler{
+    static #dom = fs.readFileSync(`${__dirname}/../dom.html`, { encoding: "utf-8"});
 
     static #templateRegex = /<template>(.*?)<\/template>/gs;
     static #propertyRegex = /(^|[^=])(\s*)(\{[^}]+\})/gs;
     static #attributeRegex = /=\s*(\{[^}]+\})/gs;
 
-    #bodyRegex;
+    #bodyRegex = /(<[^>]*id\s*=\s*['"]app['"][^>]*>).*?(<\/[^>]*>)/s;
 
     #script = fs.readFileSync(`${__dirname}/../script.js`, { encoding: "utf-8"});
     #config;
 
     constructor(config){
-        this.#bodyRegex = new RegExp(`(<[^>]*id\\s*=\\s*['"]${PagesManager.appName}['"][^>]*>).*?(<\\/[^>]*>)`, "s");
         this.#config = config;
 
-        if(process.env.DEVELOPMENT ?? false)
+        if(process.env.DEVELOPMENT)
             this.#script = uglifyjs.minify(this.#script).code;
     }
 
@@ -34,17 +29,28 @@ export class Compiler{
             return `\`${newCode}\``;
         });
 
-        code = `return (async () => {
+        code = code.replace(/\/\/[^\n\r]*|\/\*[\s\S]*?\*\/|("[^"]*")/g, function(_match, p1){
+            if(p1 == undefined)
+                return "";
+
+            return p1;
+        });
+
+        code = `(async () => {
             const config = JSON.parse(\`${JSON.stringify(this.#config.getConfig())}\`);
             ${code}
         })();`;
-
-        return await Function(code)();
+        
+        return await vm.runInContext(code, vm.createContext({
+            process: process,
+            console: console,
+            require: require
+        }));
     }
 
     async createDOM(app, page, req){
-        const styles = [...app.getStyles(true), ...page.getStyles()].join("\n");
-        const scripts = [...app.getScripts(true), ...page.getScripts()].join("\n");
+        const styles = [...app.getStyles(), ...page.getStyles()].join("\n");
+        const scripts = [...app.getScripts(), ...page.getScripts()].join("\n");
 
         const pageBody = await page.getBody(req);
         const body = (await app.getBody(req)).replace(this.#bodyRegex, function(_match, p1, p2){

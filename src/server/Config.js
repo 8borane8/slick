@@ -1,11 +1,11 @@
-export class Config{
+module.exports = class Config{
     #port;
     #alias;
     #redirect404;
     #lang;
     #config;
 
-    constructor(options){
+    constructor(options){ // TODO: verifier
         this.#port = options.port ?? 5000;
         this.#alias = options.alias ?? {
             "/favicon.ico": "/assets/favicon.ico",

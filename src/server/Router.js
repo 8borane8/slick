@@ -1,9 +1,9 @@
-import { HttpServer } from "@borane/expressapi";
-import { Minifier } from "./Minifier.js";
-import mime from "mime";
-import fs from "fs";
+const { HttpServer } = require("@borane/expressapi");
+const Minifier = require("./Minifier.js");
+const mime = require("mime");
+const fs = require("fs");
 
-export class Router{
+module.exports = class Router{
     static #staticFolders = ["/assets", "/styles", "/scripts"];
 
     #slick;
@@ -20,7 +20,6 @@ export class Router{
     #sendStaticFile(req, res){
         const filePath = `${this.#slick.getWorkingDirectory()}${req.url}`;
         const mimeType = mime.getType(filePath);
-        const notRequired = Object.keys(req.query).includes("slick-not-required");
     
         if(!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()){
             res.status(404).send({
@@ -30,20 +29,13 @@ export class Router{
             return;
         }
 
-        if(process.env.DEVELOPMENT ?? false){
+        if(process.env.DEVELOPMENT){
             res.setHeader("Cache-Control", "no-cache");
-            if(mimeType == "application/javascript" && notRequired){
-                res.setHeader("Content-Type", mimeType);
-
-                res.status(200).send(`(async () => {${fs.readFileSync(filePath, { encoding: "utf-8"})}})();`);
-                return;
-            }   
-
             res.status(200).sendFile(filePath);
             return;
         }
 
-        const file = this.#minifier.getMinifiedFile(filePath, notRequired, mimeType);
+        const file = this.#minifier.getMinifiedFile(filePath, mimeType);
 
         if(req.headers["if-modified-since"] == file.timestamp){
             res.status(304);
@@ -66,7 +58,7 @@ export class Router{
     }
 
     async #requestListener(req, res){
-        if(process.env.DEVELOPMENT ?? false)
+        if(process.env.DEVELOPMENT)
             console.log(`[${new Date().toString().split("(")[0].slice(0, -1)}] [INFO] ${req.method} => ${req.url}`);
 
         const onrequest = this.#slick.getPagesManager().getApp().onrequest;
@@ -85,11 +77,11 @@ export class Router{
         }
 
         if(req.method == "GET"){
-            await this.#slick.getPagesManager().sendPageForGetMethod(req, res);
+            await this.#slick.getPagesManager().getPage(req, res); // TODO: paradigme
             return;
         }
         
-        await this.#slick.getPagesManager().sendPageForPostMethod(req, res);
+        await this.#slick.getPagesManager().postPage(req, res); // TODO: paradigme
     }
 
     listen(){

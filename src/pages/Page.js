@@ -1,4 +1,5 @@
-export class Page{
+module.exports = class Page{
+    #required = false;
     #url;
 
     #title;
@@ -26,6 +27,10 @@ export class Page{
         this.onrequest = options.onrequest ?? null;
     }
 
+    setRequired(){
+        this.#required = true;
+    }
+
     getUrl(){
         return this.#url;
     }
@@ -38,20 +43,20 @@ export class Page{
         return this.#favicon;
     }
 
-    getStyles(required = false){
-        return this.#styles.map(style => `<link rel="stylesheet"${required ? "" : " slick-not-required"} href="${style}">`);
+    getStyles(){
+        return this.#styles.map(style => `<link rel="stylesheet"${this.#required ? "" : " slick-not-required"} href="${style}">`);
     }
 
-    getScripts(required = false){
-        return this.#scripts.map(script => `<script type="application/javascript" src="${script}${required ? "" : "?slick-not-required"}"></script>`);
+    getScripts(){
+        return this.#scripts.map(script => `<script type="application/javascript"${this.#required ? "" : " slick-not-required"} src="${script}"></script>`);
     }
 
     async getBody(req){
-        return this.#body instanceof Function ? await this.#body(req) : this.#body;
+        return typeof this.#body == "function" ? await this.#body(req) : this.#body;
     }
 
     async getHead(req){
-        return this.#head instanceof Function ? await this.#head(req) : this.#head;
+        return typeof this.#head == "function" ? await this.#head(req) : this.#head;
     }
 
     async getPostReponse(req){
