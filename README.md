@@ -45,7 +45,7 @@ npm run build
 
 Slick requiert un fichier pour d'initialisation. Créez un fichier `index.js`. Ajoutez y l'exemple suivant.
 ```js
-const { Slick } = require("@borane/slick");
+const Slick = require("@borane/slick");
 
 process.env.DEVELOPMENT = true;
 
