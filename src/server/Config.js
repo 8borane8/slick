@@ -5,7 +5,7 @@ module.exports = class Config{
     #lang;
     #config;
 
-    constructor(options){ // TODO: verifier
+    constructor(options){
         this.#port = options.port ?? 5000;
         this.#alias = options.alias ?? {
             "/favicon.ico": "/assets/favicon.ico",
