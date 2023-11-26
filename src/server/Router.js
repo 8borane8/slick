@@ -107,7 +107,7 @@ module.exports = class Router{
                 return;
             }
 
-            const template = req.body.template == page.template ? null : TemplatesController.getTemplate(page.template);
+            const template = TemplatesController.getTemplate(page.template);
 
             const url = structuredClone(req.url);
             await template.onrequest(req);
@@ -123,7 +123,7 @@ module.exports = class Router{
             }
 
             res.status(200).json({
-                template: template == null ? null : {
+                template: req.body.template == page.template ? null : {
                     name: template.name,
                     styles: template.styles,
                     scripts: template.scripts,
