@@ -57,13 +57,21 @@ module.exports = class Router{
                 return;
             }
 
-            let page = PagesController.getPage(req.url);
+            const page = PagesController.getPage(req.url);
             if(page == null){
                 res.redirect(Config.redirect404);
                 return;
             }
 
+            const template = TemplatesController.getTemplate(page.template);
+
             const url = structuredClone(req.url);
+            await template.onrequest(req);
+            if(url != req.url){
+                res.redirect(req.url);
+                return;
+            }
+
             await page.onrequest(req);
             if(url != req.url){
                 res.redirect(req.url);
@@ -93,20 +101,27 @@ module.exports = class Router{
                 return;
             }
 
-            let page = PagesController.getPage(req.url);
+            const page = PagesController.getPage(req.url);
             if(page == null){
                 res.redirect(Config.redirect404);
                 return;
             }
 
+            const template = req.body.template == page.template ? null : TemplatesController.getTemplate(page.template);
+
             const url = structuredClone(req.url);
+            await template.onrequest(req);
+            if(url != req.url){
+                res.redirect(req.url);
+                return;
+            }
+
             await page.onrequest(req);
             if(url != req.url){
                 res.redirect(req.url);
                 return;
             }
 
-            const template = req.body.template == page.template ? null : TemplatesController.getTemplate(page.template);
             res.status(200).json({
                 template: template == null ? null : {
                     name: template.name,

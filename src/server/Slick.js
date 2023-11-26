@@ -46,7 +46,7 @@ module.exports = class Slick{
                 watcher.close();
 
                 Slick.#httpServer.stop();
-                child_process.spawn(process.argv[0], [process.argv[1], "--reload"], { stdio: "inherit" });
+                child_process.spawn(process.argv[0], [process.argv[1], "--reload", ...process.argv.slice(2)], { stdio: "inherit" });
             });
         }
     }
