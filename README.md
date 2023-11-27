@@ -1,11 +1,34 @@
-# Slick
+<h1 align="center">Bienvenue sur Slick !</h1>
 
-Slick est un framework novateur permettant la création de Single Page Applications (SPA) à l'aide de Server Side Rendering (SSR). Conçu pour être rapide, léger et simple d'utilisation, Slick offre une alternative efficace pour le développement d'applications web modernes.
+<p align="center">
+    <img src="favicon.jpg" alt="favicon" width="120" height="120"/>
+    <br>
+    <em>
+        Slick est un framework NodeJS léger et performant permettant la création de<br>
+        Single Page Applications avec Server Side Rendering.
+    </em>
+</p>
+
+<p align="center">
+    <img src="https://img.shields.io/github/issues-closed/8borane8/slick.svg" alt="CI status" />
+    &nbsp;
+    <img src="https://img.shields.io/github/license/8borane8/slick.svg" alt="Angular on npm" />
+    &nbsp;
+    <img src="https://img.shields.io/github/forks/8borane8/slick.svg" alt="Angular on npm" />
+    &nbsp;
+    <img src="https://img.shields.io/github/stars/8borane8/slick.svg" alt="CI status" />
+</p>
+
+<hr>
+
+## Présentation
+
+Slick est un framework qui utilise NodeJS pour la création de Single Page Applications en intégrant le Server Side Rendering. Conçu pour être performant, léger et facile à utiliser, Slick propose une alternative aux frameworks tels que React, Angular et Vue. Ces derniers sont généralement moins rapides et plus lourds à exécuter, tandis que Slick vise à offrir une solution plus efficace et légère pour le développement d'applications web.
 
 ## Technologies
 
-- Language : NodeJS
-- Librairies : @borane/expressapi, clean-css, mime, uglify-js
+- **Language** : NodeJS
+- **Librairies** : @borane/expressapi, clean-css, mime, uglify-js
 
 ## Avantages
 
@@ -168,10 +191,24 @@ Remarques :
 - Les styles et scripts sont spécifiques à chaque page, offrant une modularité pour le chargement de ressources.
 - La fonction onrequest offre un contrôle personnalisé sur le traitement des requêtes HTTP spécifiques au template, permettant des actions telles que les redirections en fonction de la logique de votre application grace à req.url.
 
+### User Script
+
+Slick propose un User Script qui vous permet d'interagir avec et de contrôler divers aspects de votre application web de manière dynamique. Cela est particulièrement utile pour gérer des actions telles que le rechargement de la page, la redirection, ou la gestion des cookies directement depuis les fichiers JavaScript de votre site.
+
+#### Slick
+
+- **reload():** Force le rechargement de la page actuelle.
+- **redirect(url):** Redirige l'utilisateur vers l'URL spécifiée.
+
+#### SlickCookies
+- **set(cname, cvalue, exdays = 14):** Définit un cookie avec son nom, sa valeur et optionnelement sa date d'expiration.
+- **get(name):** Récupère la valeur d'un cookie par son nom.
+- **delete(cname):** Supprime un cookie par son nom.
+
 ## Disclamer
 
 Slick n'intègre pas directement le JSX de React. Toutefois, il compile les modules, permettant ainsi l'utilisation d'HTML au sein du JavaScript. Il est important de noter que cette fonctionnalité diffère de la prise en charge native du JSX de React et peut ne pas offrir les mêmes avantages ou fonctionnalités.
 
 En tant que framework de développement, Slick est conçu pour allier performance et simplicité d'utilisation. Bien que nous nous efforcions d'offrir une expérience fluide, comme tout logiciel, Slick peut parfois présenter des bugs ou des vulnérabilités. Si vous rencontrez un problème ou si vous avez des préoccupations concernant la sécurité de Slick, nous vous encourageons vivement à nous en informer immédiatement.
 
-**Vous aimez Slick ? Ajoutez une star à notre répertoire :star: :arrow_up:.**
+**Vous aimez Slick ? Ajoutez une star à notre répertoire :star::arrow_up:.**
