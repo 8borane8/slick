@@ -193,7 +193,7 @@ Remarques :
 
 ### User Script
 
-Slick propose un User Script qui vous permet d'interagir avec et de contrôler divers aspects de votre application web de manière dynamique. Cela est particulièrement utile pour gérer des actions telles que le rechargement de la page, la redirection, ou la gestion des cookies directement depuis les fichiers JavaScript de votre site.
+Slick propose un User Script qui vous permet d'interagir avec votre application et de contrôler divers aspects de celle-ci. Cela est particulièrement utile pour gérer des actions telles que le rechargement de la page, la redirection, ou la gestion des cookies directement depuis les fichiers JavaScript de votre site.
 
 #### Slick
 
@@ -201,6 +201,7 @@ Slick propose un User Script qui vous permet d'interagir avec et de contrôler d
 - **redirect(url):** Redirige l'utilisateur vers l'URL spécifiée.
 
 #### SlickCookies
+
 - **set(cname, cvalue, exdays = 14):** Définit un cookie avec son nom, sa valeur et optionnelement sa date d'expiration.
 - **get(name):** Récupère la valeur d'un cookie par son nom.
 - **delete(cname):** Supprime un cookie par son nom.
