@@ -1,7 +1,7 @@
 <h1 align="center">Bienvenue sur Slick !</h1>
 
 <p align="center">
-    <img src="favicon.jpg" alt="favicon" width="120" height="120"/>
+    <img src=".github/favicon.png" alt="favicon" width="120" height="120"/>
     <br>
     <em>
         Slick est un framework NodeJS léger et performant permettant la création de<br>
