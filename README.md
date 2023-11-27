@@ -40,7 +40,7 @@ Pour commencer un nouveau projet avec Slick, suivez ces étapes après avoir ins
 }
 ```
 
-7. Lancez le projet avec l'une des commandes suivantes:
+6. Lancez le projet avec l'une des commandes suivantes:
 - `npm run dev`
 - `npm run build`
 
@@ -103,12 +103,12 @@ return {
 ```
 
 Propriétés :
-- name: Le nom du template, utilisé pour l'associer aux pages correspondantes.
-- styles: Tableau des chemins vers les fichiers CSS spécifiques au template.
-- scripts: Tableau des chemins vers les fichiers JavaScript spécifiques au template.
+- name: Le nom du template, utilisé pour l'associer aux pages correspondantes. ( String )
+- styles: Tableau des chemins vers les fichiers CSS spécifiques au template. ( Array )
+- scripts: Tableau des chemins vers les fichiers JavaScript spécifiques au template. ( Array )
 - head: Contenu de la balise <head> ( <></> | Async function(req) )
 - body: Contenu de la balise <body> ( <></> | Async function(req) )
-- onrequest: Fonction facultative pour la gestion personnalisée des requêtes HTTP spécifiques au template. ( null | Async function(req) )
+- onrequest: Fonction facultative pour la gestion personnalisée des requêtes HTTP spécifiques au template. ( Null | Async function(req) )
 
 Remarques :
 - Les templates fournissent une structure réutilisable pour les pages, facilitant la gestion de la mise en page globale de l'application.
@@ -153,15 +153,15 @@ return {
 ```
 
 Propriétés :
-- url: L'URL associée à la page. ( string )
-- template: Le nom du template à utiliser pour cette page. ( string )
-- title: Titre de la page. ( string )
-- favicon ( null | string )
+- url: L'URL associée à la page. ( String )
+- template: Le nom du template à utiliser pour cette page. ( String )
+- title: Titre de la page. ( String )
+- favicon ( Null | String )
 - styles: Tableau des chemins vers les fichiers CSS spécifiques au template. ( Array )
 - scripts: Tableau des chemins vers les fichiers JavaScript spécifiques au template. ( Array )
 - head: Contenu de la balise <head> ( <></> | Async function(req) )
 - body: Contenu de la balise <body> ( <></> | Async function(req) )
-- onrequest: Fonction facultative pour la gestion personnalisée des requêtes HTTP spécifiques au template. ( null | Async function(req) )
+- onrequest: Fonction facultative pour la gestion personnalisée des requêtes HTTP spécifiques au template. ( Null | Async function(req) )
 
 Remarques :
 - Assurez-vous que le template spécifié existe et correspond à celui défini dans le template global de l'application.
@@ -173,3 +173,5 @@ Remarques :
 Slick n'intègre pas directement le JSX de React. Toutefois, il compile les modules, permettant ainsi l'utilisation d'HTML au sein du JavaScript. Il est important de noter que cette fonctionnalité diffère de la prise en charge native du JSX de React et peut ne pas offrir les mêmes avantages ou fonctionnalités.
 
 En tant que framework de développement, Slick est conçu pour allier performance et simplicité d'utilisation. Bien que nous nous efforcions d'offrir une expérience fluide, comme tout logiciel, Slick peut parfois présenter des bugs ou des vulnérabilités. Si vous rencontrez un problème ou si vous avez des préoccupations concernant la sécurité de Slick, nous vous encourageons vivement à nous en informer immédiatement.
+
+**Vous aimez Slick ? Ajoutez une star à notre répertoire :star: :arrow_up:.**
