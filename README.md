@@ -5,7 +5,7 @@
     <br>
     <em>
         Slick est un framework NodeJS léger et performant permettant la création de<br>
-        Single Page Applications avec Server Side Rendering.
+        Single Page Applications avec du Server Side Rendering.
     </em>
 </p>
 
@@ -14,9 +14,9 @@
     &nbsp;
     <img src="https://img.shields.io/github/license/8borane8/slick.svg" alt="Angular on npm" />
     &nbsp;
-    <img src="https://img.shields.io/github/forks/8borane8/slick.svg" alt="Angular on npm" />
-    &nbsp;
     <img src="https://img.shields.io/github/stars/8borane8/slick.svg" alt="CI status" />
+    &nbsp;
+    <img src="https://img.shields.io/github/forks/8borane8/slick.svg" alt="Angular on npm" />
 </p>
 
 <hr>
