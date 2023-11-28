@@ -69,7 +69,7 @@ Pour commencer un nouveau projet avec Slick, suivez ces étapes après avoir ins
 
 ## Documentation
 
-### Fichier d'Initialisation (index.js)
+### Fichier d'Initialisation
 
 Slick nécessite un fichier d'initialisation pour démarrer votre application. Créez le fichier `src/index.js`:
 
