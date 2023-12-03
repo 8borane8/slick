@@ -1,5 +1,4 @@
 const vm = require("vm");
-const fs = require("fs");
 
 module.exports = class Compiler{
     constructor(){
@@ -7,15 +6,15 @@ module.exports = class Compiler{
     }
 
     static #commentRegex = /{\s*\/\*.*\*\/\s*}/gs;
-    static #propertyRegex = /(?<![=\s])\s*(\{.*?\})/gs;
+    static #propertyRegex = /(?<![=$])(\{.*?\})/gs;
     static #attributeRegex = /=\s*(\{.*?\})/gs;
     static #codeRegex = /<>(.*?)<\/>/gs;
 
     static parse(code){
         code = code.replace(Compiler.#codeRegex, (_match, group) => {
             let newCode = group.replace(Compiler.#commentRegex, "");
-            newCode = newCode.replace(Compiler.#propertyRegex, (_match, group) => `\$${group}`);
             newCode = newCode.replace(Compiler.#attributeRegex, (_match, group) => `="\$${group}"`);
+            newCode = newCode.replace(Compiler.#propertyRegex, (_match, group) => `\$${group}`);
             return `\`${newCode}\``;
         });
 
