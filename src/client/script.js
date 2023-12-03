@@ -76,9 +76,9 @@ class Slick{
         }
     }
 
-    static async reload(){
+    static async reload(url = window.location.pathname){
         Slick._template = null;
-        await Slick.redirect(window.location.pathname);
+        await Slick.redirect(url);
     }
 
     static async redirect(url){
@@ -90,7 +90,7 @@ class Slick{
         const jsonResponse = await rawResponse.json();
 
         if(rawResponse.redirected)
-            window.history.pushState({}, "", jsonResponse.page.url);
+            window.history.pushState({}, "", rawResponse.url);
         else
             window.history.pushState({}, "", url);
 
