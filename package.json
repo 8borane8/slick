@@ -13,12 +13,11 @@
 		"url": "https://github.com/8borane8/slick.git"
 	},
 	"keywords": [
-		"Slick", "Framework",
-		"Single Page Application", "SPA",
-		"Server Side Rendering", "SSR",
-		"Web Development",
-		"Frontend", "Front-End",
-		"Lightweight"
+		"slick",
+		"single-page-app", "spa",
+		"server-side-rendering", "ssr",
+		"framework", "web",
+		"frontend", "lightweight"
 	],
 	
 	"main": "./src/server/Slick.js",

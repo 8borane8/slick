@@ -197,8 +197,7 @@ Slick propose un User Script qui vous permet d'interagir avec votre application 
 
 #### Slick
 
-- **reload():** Force le rechargement de la page actuelle.
-- **redirect(url):** Redirige l'utilisateur vers l'URL spécifiée.
+- **redirect(url, reload = false):** Redirige l'utilisateur vers l'URL spécifiée.
 
 #### SlickCookies
 
