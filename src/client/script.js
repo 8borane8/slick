@@ -76,12 +76,10 @@ class Slick{
         }
     }
 
-    static async reload(url = window.location.pathname){
-        Slick._template = null;
-        await Slick.redirect(url);
-    }
+    static async redirect(url, reload = false){
+        if(reload)
+            Slick._template = null;
 
-    static async redirect(url){
         const rawResponse = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

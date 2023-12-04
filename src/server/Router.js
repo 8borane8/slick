@@ -177,6 +177,9 @@ module.exports = class Router{
         res.setHeader("Last-Modified", file.timestamp);
         res.setHeader("Content-Type", file.mimeType);
 
-        res.send(file.content);
+        if(file.content != null)
+            return res.status(200).send(file.content);
+
+        res.sendFile(filePath);
     }
 }

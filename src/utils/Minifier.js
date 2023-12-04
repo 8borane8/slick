@@ -13,16 +13,16 @@ module.exports = class Minifier{
 
     static async #minifyFile(filePath){
         const file = {
-            content: fs.readFileSync(filePath),
+            content: null,
             timestamp: Date.now(),
             mimeType: mime.getType(filePath)
         };
 
         if(file.mimeType == "text/css")
-            file.content = Minifier.#cssMinifier.minify(file.content).styles;
+            file.content = Minifier.#cssMinifier.minify(fs.readFileSync(filePath, { encoding: "utf-8" })).styles;
 
         else if(file.mimeType == "application/javascript")
-            file.content = uglifyjs.minify(file.content, { mangle: { keep_fnames: true } }).code;
+            file.content = uglifyjs.minify(fs.readFileSync(filePath, { encoding: "utf-8" }), { mangle: { keep_fnames: true } }).code;
 
         return file;
     }
