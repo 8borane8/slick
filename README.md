@@ -111,7 +111,7 @@ return {
     head: <>
         <meta name="robots" content="index, follow" />
     </>,
-    body: (req) => {
+    body: req => {
         const classname = "url";
         return <>
             <p class={classname}>{req.url}</p>
@@ -119,7 +119,7 @@ return {
         </>
     },
 
-    onrequest: (req) => {
+    onrequest: req => {
         req.url = "/newurl";
     }
 };
@@ -162,16 +162,14 @@ return {
         <meta name="og:description" content="Index" />
     </>,
 
-    body: (req) => {
+    body: req => {
         const text = "This is the content of the page. Method:" + req.method;
         return <>
             <p>{text}</p>
         </>
     },
 
-    onrequest: null || (req) => {
-        req.url = "/newurl";
-    }
+    onrequest: null
 };
 ```
 

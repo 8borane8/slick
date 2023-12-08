@@ -19,6 +19,10 @@
 		"framework", "web",
 		"frontend", "lightweight"
 	],
+
+	"engines" : { 
+    	"node" : ">=17.0.0"
+  	},
 	
 	"main": "./src/server/Slick.js",
 	"dependencies": {
