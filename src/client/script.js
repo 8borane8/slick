@@ -26,10 +26,10 @@ class Slick{
     static _onload(selector){
         for (let link of Array.from(document.querySelectorAll(selector))) {
             link.addEventListener("click", async e => {
-                e.preventDefault();
-
                 if (!["", "_self"].includes(link.target))
                     return;
+
+                e.preventDefault();
 
                 const url = new URL(link.href);
                 if (window.location.host !== url.host)
