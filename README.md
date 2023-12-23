@@ -58,7 +58,7 @@ Pour commencer un nouveau projet avec Slick, suivez ces étapes après avoir ins
     },
 
     "dependencies": {
-        "@borane/slick": "^3.0.0"
+        "@borane/slick": "^4.0.0"
     }
 }
 ```
