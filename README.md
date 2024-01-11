@@ -41,7 +41,7 @@ Slick est un framework qui utilise NodeJS pour la création de Single Page Appli
 Pour commencer un nouveau projet avec Slick, suivez ces étapes après avoir installé [NodeJS](https://nodejs.org/):
 
 1. Créez un nouveau répertoire: `mkdir Nouveau_Projet && cd Nouveau_Projet`.
-2. Mettez en place la structure du projet `mkdir src && cd src && mkdir templates pages styles scripts assets`.
+2. Mettez en place la structure du projet `mkdir src && cd src && mkdir templates pages styles scripts assets && cd ..`.
 3. Initialisez le projet NodeJS: `npm init -y`.
 4. Installez Slick: `npm i @borane/slick`.
 
