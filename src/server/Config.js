@@ -21,7 +21,7 @@ module.exports = class Config{
         Config.#port = options.port ?? 5000;
 
         Config.#lang = options.lang ?? "en";
-        Config.#alias = options.lang ?? {
+        Config.#alias = options.alias ?? {
             "/favicon.ico": "/assets/favicon.ico",
             "/robots.txt": "/assets/robots.txt"
         };

@@ -53,8 +53,8 @@ Pour commencer un nouveau projet avec Slick, suivez ces étapes après avoir ins
     "author": "username",
 
     "scripts": {
-        "dev": "node src/index.js --dev",
-        "build": "node src/index.js"
+        "dev": "node ./src/index.js --dev",
+        "build": "node ./src/index.js"
     },
 
     "dependencies": {
