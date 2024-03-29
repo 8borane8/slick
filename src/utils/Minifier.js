@@ -1,5 +1,5 @@
-const uglifyjs = require("uglify-js");
 const cleancss = require("clean-css");
+const terser = require("terser");
 const mime = require("mime");
 const fs = require("fs");
 
@@ -22,7 +22,7 @@ module.exports = class Minifier{
             file.content = Minifier.#cssMinifier.minify(fs.readFileSync(filePath, { encoding: "utf-8" })).styles;
 
         else if(file.mimeType == "application/javascript")
-            file.content = uglifyjs.minify(fs.readFileSync(filePath, { encoding: "utf-8" }), { mangle: { keep_fnames: true } }).code;
+            file.content = (await terser.minify(fs.readFileSync(filePath, { encoding: "utf-8" }))).code;
 
         return file;
     }

@@ -1,6 +1,6 @@
 {
 	"name": "@borane/slick",
-	"version": "4.0.7",
+	"version": "4.0.8",
 
 	"description": "Slick est un framework novateur permettant la création de Single Page Applications (SPA) à l'aide de Server Side Rendering (SSR). Conçu pour être rapide, léger et simple d'utilisation, Slick offre une alternative efficace pour le développement d'applications web modernes.",
 	"author": "borane",
@@ -28,7 +28,7 @@
 	"dependencies": {
 		"@borane/expressapi": "^3.0.0",
 		"clean-css": "^5.3.2",
-		"mime": "^3.0.0",
-		"uglify-js": "^3.17.4"
+		"terser": "^5.30.0",
+		"mime": "^3.0.0"
 	}
 }

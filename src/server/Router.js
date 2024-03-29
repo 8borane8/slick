@@ -160,14 +160,14 @@ module.exports = class Router{
             return;
         }
 
-        if(Config.development || req.headers["cache-control"] == "no-cache"){
+        if(Config.development){
             res.sendFile(filePath);
             return;
         }
 
         const file = await Minifier.getMinifiedFile(filePath);
 
-        if(req.headers["if-modified-since"] == file.timestamp){
+        if(!req.headers["cache-control"].includes("no-cache") && req.headers["if-modified-since"] == file.timestamp){
             res.status(304).end();
             return;
         }
