@@ -167,7 +167,7 @@ module.exports = class Router{
 
         const file = Minifier.getMinifiedFile(filePath);
 
-        if(!req.headers["cache-control"].includes("no-cache") && req.headers["if-modified-since"] == file.timestamp){
+        if(!(Object.keys(req.headers).includes("cache-control") && req.headers["cache-control"].includes("no-cache")) && req.headers["if-modified-since"] == file.timestamp){
             res.status(304).end();
             return;
         }
