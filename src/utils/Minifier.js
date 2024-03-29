@@ -11,7 +11,7 @@ module.exports = class Minifier{
     static #cssMinifier = new cleancss();
     static #cache = new Map();
 
-    static async #minifyFile(filePath){
+    static #minifyFile(filePath){
         const file = {
             content: null,
             timestamp: Date.now(),
@@ -22,16 +22,16 @@ module.exports = class Minifier{
             file.content = Minifier.#cssMinifier.minify(fs.readFileSync(filePath, { encoding: "utf-8" })).styles;
 
         else if(file.mimeType == "application/javascript")
-            file.content = (await terser.minify(fs.readFileSync(filePath, { encoding: "utf-8" }))).code;
+            file.content = terser.minify_sync(fs.readFileSync(filePath, { encoding: "utf-8" })).code;
 
         return file;
     }
 
-    static async getMinifiedFile(filePath){
+    static getMinifiedFile(filePath){
         if(Minifier.#cache.has(filePath))
             return Minifier.#cache.get(filePath);
 
-        const file = await Minifier.#minifyFile(filePath);
+        const file = Minifier.#minifyFile(filePath);
 
         Minifier.#cache.set(filePath, file);
         return file;

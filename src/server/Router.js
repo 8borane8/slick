@@ -4,7 +4,7 @@ const Minifier = require("./../utils/Minifier.js");
 const Logger = require("./../utils/Logger.js");
 const Config = require("./Config.js");
 
-const uglifyjs = require("uglify-js");
+const terser = require("terser");
 const fs = require("fs");
 
 module.exports = class Router{
@@ -12,7 +12,7 @@ module.exports = class Router{
         throw Error("A static class cannot be instantiated.");
     }
 
-    static #script = uglifyjs.minify(fs.readFileSync(`${__dirname}/../client/script.js`, { encoding: "utf-8"}), { mangle: { keep_fnames: true } }).code;
+    static #script = terser.minify_sync(fs.readFileSync(`${__dirname}/../client/script.js`, { encoding: "utf-8"}), { mangle: { keep_fnames: true } }).code;
     static #dom = fs.readFileSync(`${__dirname}/../client/dom.html`, { encoding: "utf-8"});
     static #bodyRegex = /(<[^>]*id\s*=\s*['"]app['"][^>]*>).*?(<\/[^>]*>)/s;
 
@@ -53,7 +53,7 @@ module.exports = class Router{
                 req.url = Config.alias[req.url];
 
             if(PagesController.staticFolders.some(url => req.url.startsWith(url))){
-                await Router.#sendStaticFile(req, res);
+                Router.#sendStaticFile(req, res);
                 return;
             }
 
@@ -149,7 +149,7 @@ module.exports = class Router{
         });
     }
 
-    static async #sendStaticFile(req, res){
+    static #sendStaticFile(req, res){
         const filePath = Config.workspace + req.url;
 
         if(!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()){
@@ -165,7 +165,7 @@ module.exports = class Router{
             return;
         }
 
-        const file = await Minifier.getMinifiedFile(filePath);
+        const file = Minifier.getMinifiedFile(filePath);
 
         if(!req.headers["cache-control"].includes("no-cache") && req.headers["if-modified-since"] == file.timestamp){
             res.status(304).end();

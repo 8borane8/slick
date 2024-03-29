@@ -28,7 +28,7 @@ Slick est un framework qui utilise NodeJS pour la création de Single Page Appli
 ## Technologies
 
 - **Language** : NodeJS
-- **Librairies** : @borane/expressapi, clean-css, mime, uglify-js
+- **Librairies** : @borane/expressapi, clean-css, terser, mime
 
 ## Avantages
 
