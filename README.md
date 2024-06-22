@@ -23,11 +23,11 @@
 
 ## Présentation
 
-Slick est un framework qui utilise NodeJS pour la création de Single Page Applications en intégrant le Server Side Rendering. Conçu pour être performant, léger et facile à utiliser, Slick propose une alternative aux frameworks tels que React, Angular et Vue. Ces derniers sont généralement moins rapides et plus lourds à exécuter, tandis que Slick vise à offrir une solution plus efficace et légère pour le développement d'applications web.
+Slick est un framework Typescript pour la création de Single Page Applications en intégrant le Server Side Rendering. Conçu pour être performant, léger et facile à utiliser, Slick propose une alternative aux frameworks tels que React, Angular et Vue. Ces derniers sont généralement moins rapides et plus lourds à exécuter, tandis que Slick vise à offrir une solution plus efficace et légère pour le développement d'applications web.
 
 ## Technologies
 
-- **Language** : NodeJS
+- **Language** : Node (Typescript)
 - **Librairies** : @borane/expressapi, clean-css, terser, mime
 
 ## Avantages
@@ -74,9 +74,9 @@ Pour commencer un nouveau projet avec Slick, suivez ces étapes après avoir ins
 Slick nécessite un fichier d'initialisation pour démarrer votre application. Créez le fichier `src/index.js`:
 
 ```js
-const Slick = require("@borane/slick");
+const { Slick } = require("@borane/slick");
 
-Slick.start({
+new Slick({
     workspace: __dirname,
     port: 5000,
 
@@ -131,7 +131,7 @@ Propriétés :
 - scripts: Tableau des chemins vers les fichiers JavaScript spécifiques au template. ( Array )
 - head: Contenu de la balise <head> ( <></> | Async function(req) )
 - body: Contenu de la balise <body> ( <></> | Async function(req) )
-- onrequest: Fonction facultative pour la gestion personnalisée des requêtes HTTP spécifiques au template. ( Null | Async function(req) )
+- onrequest: Fonction facultative pour la gestion personnalisée des requêtes HTTP spécifiques au template. ( Async function(req) | Null )
 
 Remarques :
 - Les templates fournissent une structure réutilisable pour les pages, facilitant la gestion de la mise en page globale de l'application.
@@ -182,7 +182,7 @@ Propriétés :
 - scripts: Tableau des chemins vers les fichiers JavaScript spécifiques au template. ( Array )
 - head: Contenu de la balise <head> ( <></> | Async function(req) )
 - body: Contenu de la balise <body> ( <></> | Async function(req) )
-- onrequest: Fonction facultative pour la gestion personnalisée des requêtes HTTP spécifiques au template. ( Null | Async function(req) )
+- onrequest: Fonction facultative pour la gestion personnalisée des requêtes HTTP spécifiques au template. ( Async function(req) | Null )
 
 Remarques :
 - Assurez-vous que le template spécifié existe et correspond à celui défini dans le template global de l'application.
